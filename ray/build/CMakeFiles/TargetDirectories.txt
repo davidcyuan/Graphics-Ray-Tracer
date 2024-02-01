@@ -1,0 +1,5 @@
+/u/dyuan/Documents/Graphics/Ray Tracer I/ray/build/CMakeFiles/rebuild_cache.dir
+/u/dyuan/Documents/Graphics/Ray Tracer I/ray/build/CMakeFiles/edit_cache.dir
+/u/dyuan/Documents/Graphics/Ray Tracer I/ray/build/src/CMakeFiles/rebuild_cache.dir
+/u/dyuan/Documents/Graphics/Ray Tracer I/ray/build/src/CMakeFiles/edit_cache.dir
+/u/dyuan/Documents/Graphics/Ray Tracer I/ray/build/src/CMakeFiles/ray.dir
