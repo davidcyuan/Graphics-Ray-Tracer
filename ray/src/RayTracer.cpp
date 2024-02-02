@@ -295,7 +295,7 @@ bool RayTracer::loadScene(const char *fn) {
 }
 
 void RayTracer::traceSetup(int w, int h) {
-  cout << "traceSetup called";
+  cout << "traceSetup called"<<std::endl;
   size_t newBufferSize = w * h * 3;
   if (newBufferSize != buffer.size()) {
     bufferSize = newBufferSize;
@@ -330,7 +330,11 @@ void RayTracer::traceSetup(int w, int h) {
  *		h:	height of the image buffer
  *
  */
+
 void RayTracer::traceImage(int w, int h) {
+  //I am going to use this to test functions.
+  //std::cout<<test_vector<<std::endl;
+
   // Always call traceSetup before rendering anything.
   traceSetup(w, h);
 

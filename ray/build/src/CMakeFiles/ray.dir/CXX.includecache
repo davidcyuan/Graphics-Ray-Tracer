@@ -484,12 +484,6 @@ iostream
 string
 -
 
-/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/fileio/images.h
-stdint.h
--
-vector
--
-
 /u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/parser/JsonParser.h
 map
 -
@@ -600,20 +594,6 @@ memory
 
 /u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/scene/kdTree.h
 
-/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/scene/light.cpp
-cmath
--
-iostream
--
-algorithm
--
-light.h
-/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/scene/light.h
-glm/glm.hpp
--
-glm/gtx/io.hpp
--
-
 /u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/scene/light.h
 algorithm
 -
@@ -622,22 +602,6 @@ algorithm
 scene.h
 /u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/scene/scene.h
 FL/gl.h
--
-
-/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/scene/material.cpp
-material.h
-/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/scene/material.h
-../ui/TraceUI.h
-/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/ui/TraceUI.h
-light.h
-/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/scene/light.h
-ray.h
-/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/scene/ray.h
-../fileio/images.h
-/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/fileio/images.h
-glm/gtx/io.hpp
--
-iostream
 -
 
 /u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/scene/material.h

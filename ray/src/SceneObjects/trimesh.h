@@ -136,6 +136,11 @@ public:
   bool intersect(ray &r, isect &i) const;
   bool intersectLocal(ray &r, isect &i) const;
   Trimesh *getParent() const { return parent; }
+  //calculate bay-coordinates
+  //should return 3d array, values [0, 1], all elements sum up to 1
+  //because I'm lazy, I will use dvec3 to hold the array
+  //first 3 inputs are p1, p2, and p3. 4th input is c
+  glm::dvec3 bay_coordinate(glm::dvec3 p1, glm::dvec3 p2, glm::dvec3 p3, glm::dvec3 c) const;
 
   bool hasBoundingBoxCapability() const { return true; }
 
