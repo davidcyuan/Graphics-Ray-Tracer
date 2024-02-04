@@ -83,7 +83,17 @@ bool TrimeshFace::intersect(ray &r, isect &i) const {
 bool TrimeshFace::intersectLocal(ray &r, isect &i) const {
   // YOUR CODE HERE
   //
-  // FIXME: Add ray-trimesh intersection
+  /* To determine the color of an intersection, use the following rules:
+     - If the parent mesh has non-empty `uvCoords`, barycentrically interpolate
+       the UV coordinates of the three vertices of the face, then assign it to
+       the intersection using i.setUVCoordinates().
+     - Otherwise, if the parent mesh has non-empty `vertexColors`,
+       barycentrically interpolate the colors from the three vertices of the
+       face. Create a new material by copying the parent's material, set the
+       diffuse color of this material to the interpolated color, and then 
+       assign this material to the intersection.
+     - If neither is true, assign the parent's material to the intersection.
+  */
   glm::dvec3 q_dav = parent->vertices[ids[0]];
   glm::dvec3 o_dav = r.getPosition();
   glm::dvec3 n_dav = normal;
@@ -123,6 +133,24 @@ bool TrimeshFace::intersectLocal(ray &r, isect &i) const {
     i.setN(normal);
     i.setObject(this->parent);
     i.setT(t_dav);
+
+    //get Bary Coords here
+    //p1 = A, p2 = B, p3 = C, c = position
+    //!!!!
+    if(!this->parent->vertColors.empty()){
+      glm::dvec3 bay_coords = bay_coordinate(A, B, C, position);
+      glm::dvec3 vert_color_0 = parent->vertColors[id[0]];
+      glm::dvec3 vert_color_1 = parent->vertColors[id[1]];
+      glm::dvec3 vert_color_2 = parent->vertColors[id[2]];
+      glm::devec3 mixed_color = vert_color_0 * bay_coords[0] + vert_color_1 * bay_coords[1] + vert_color_2 * bay_coords[2];
+
+      Material material_copy = i.getMaterial();
+      material_copy.setDiffuse(mixed_color);
+      i.setMaterial(material_copy);
+    }
+
+
+
     return true;
   } else{
     return false;
