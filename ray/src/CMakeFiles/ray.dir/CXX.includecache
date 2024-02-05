@@ -1,0 +1,124 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/SceneObjects/trimesh.cpp
+trimesh.h
+/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/SceneObjects/trimesh.h
+algorithm
+-
+assert.h
+-
+cmath
+-
+float.h
+-
+string.h
+-
+../ui/TraceUI.h
+/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/ui/TraceUI.h
+iostream
+-
+
+/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/SceneObjects/trimesh.h
+list
+-
+memory
+-
+vector
+-
+../scene/kdTree.h
+/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/scene/kdTree.h
+../scene/material.h
+/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/scene/material.h
+../scene/ray.h
+/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/scene/ray.h
+../scene/scene.h
+/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/scene/scene.h
+glm/gtc/matrix_transform.hpp
+-
+glm/vec3.hpp
+-
+
+/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/scene/bbox.h
+glm/vec3.hpp
+-
+
+/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/scene/camera.h
+ray.h
+/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/scene/ray.h
+glm/mat3x3.hpp
+-
+glm/vec3.hpp
+-
+
+/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/scene/kdTree.h
+
+/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/scene/material.h
+glm/glm.hpp
+-
+glm/vec2.hpp
+-
+glm/vec3.hpp
+-
+stdint.h
+-
+string
+-
+vector
+-
+
+/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/scene/ray.h
+material.h
+/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/scene/material.h
+glm/vec2.hpp
+-
+glm/vec3.hpp
+-
+memory
+-
+
+/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/scene/scene.h
+algorithm
+-
+map
+-
+memory
+-
+mutex
+-
+string
+-
+vector
+-
+bbox.h
+/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/scene/bbox.h
+camera.h
+/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/scene/camera.h
+material.h
+/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/scene/material.h
+ray.h
+/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/scene/ray.h
+glm/geometric.hpp
+-
+glm/mat3x3.hpp
+-
+glm/mat4x4.hpp
+-
+glm/matrix.hpp
+-
+glm/vec3.hpp
+-
+glm/vec4.hpp
+-
+
+/u/dyuan/Documents/Graphics/Ray Tracer I/ray/src/ui/TraceUI.h
+memory
+-
+string
+-
+
