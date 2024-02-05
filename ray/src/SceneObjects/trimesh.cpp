@@ -145,21 +145,22 @@ bool TrimeshFace::intersectLocal(ray &r, isect &i) const {
       glm::dvec3 vert_color_1 = parent->vertColors[ids[1]];
       glm::dvec3 vert_color_2 = parent->vertColors[ids[2]];
       glm::dvec3 mixed_color = vert_color_0 * bay_coords[0] + vert_color_1 * bay_coords[1] + vert_color_2 * bay_coords[2];
+
+      Material material_copy = i.getMaterial();
+      material_copy.setDiffuse(mixed_color);
+      i.setMaterial(material_copy);
+
+    }
+    if(!this->parent->normals.empty()){
+      glm::dvec3 bay_coords = bay_coordinate(A, B, C, position);
       //norm mixing
       glm::dvec3 vert_normal_0 = parent->normals[ids[0]];
       glm::dvec3 vert_normal_1 = parent->normals[ids[1]];
       glm::dvec3 vert_normal_2 = parent->normals[ids[2]];
       glm::dvec3 mixed_normal = vert_normal_0 * bay_coords[0] + vert_normal_1 * bay_coords[1] + vert_normal_2 * bay_coords[2];
       mixed_normal = glm::normalize(mixed_normal);
-
-      Material material_copy = i.getMaterial();
-      material_copy.setDiffuse(mixed_color);
-      i.setMaterial(material_copy);
       i.setN(mixed_normal);
     }
-    
-
-
 
     return true;
   } else{
