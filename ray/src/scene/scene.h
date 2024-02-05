@@ -172,6 +172,7 @@ public:
   void add(Light *light);
 
   bool intersect(ray &r, isect &i) const;
+  std::vector<isect> intersect_list(ray &r, Light * pLight) const;
 
   auto beginLights() const { return lights.begin(); }
   auto endLights() const { return lights.end(); }

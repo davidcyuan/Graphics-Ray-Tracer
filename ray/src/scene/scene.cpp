@@ -10,6 +10,8 @@
 
 using namespace std;
 
+extern bool debugMode;
+
 bool Geometry::intersect(ray &r, isect &i) const {
   double tmin, tmax;
   if (hasBoundingBoxCapability() && !(bounds.intersect(r, tmin, tmax)))
@@ -112,8 +114,6 @@ void Scene::add(Light *light) { lights.emplace_back(light); }
 // Get any intersection with an object.  Return information about the
 // intersection through the reference parameter.
 bool Scene::intersect(ray &r, isect &i) const {
-  double tmin = 0.0;
-  double tmax = 0.0;
   bool have_one = false;
   for (const auto &obj : objects) {
     isect cur;
@@ -131,6 +131,64 @@ bool Scene::intersect(ray &r, isect &i) const {
     addToIntersectCache(std::make_pair(new ray(r), new isect(i)));
   }
   return have_one;
+}
+std::vector<isect> Scene::intersect_list(ray &r, Light * pLight) const{
+  //array of isect objects
+  std::vector<isect> intersections;
+  //time elapsed
+  double time = 0.0;
+  bool hitwall = false;
+  bool hitlight = false;
+  bool hit_opaque_obj = false;
+  ray cur_ray = r;
+  //keep shooting rays till we hit light or wall
+  //!hitwall && !hitlight
+  while(!hitwall && !hitlight&&!hit_opaque_obj){
+    if(debugMode){
+      std::cout<<"intersect_list time: "<<time<<std::endl;
+    }
+    isect cur_isect;
+    bool hitobject = this->intersect(cur_ray, cur_isect);
+    if(hitobject == false){
+      hitwall = true;
+    }
+    else{
+      double shadow_sect_dist = glm::length(r.getDirection() * cur_isect.getT());
+      double light_dist = pLight->getDistance(r.getPosition());
+      //shadow ray hits light before closest object
+      if(light_dist > 0 && light_dist < shadow_sect_dist){
+        hitlight = true;
+      }
+      //shadow ray hits opaque object
+      else if(cur_isect.getMaterial().Trans()==false){
+        hit_opaque_obj = true;
+        //the time it took to travel the new intersection, added onto original time;
+        time = time + cur_isect.getT();
+        cur_isect.setT(time);
+        intersections.emplace_back(cur_isect);
+      }
+      //shadow ray hits trans object
+      else{
+
+        //the time it took to travel the new intersection, added onto original time;
+        time = time + cur_isect.getT();
+        cur_isect.setT(time);
+        intersections.emplace_back(cur_isect);
+        //set position to new position
+        cur_ray.setPosition(cur_ray.at(cur_isect.getT()+RAY_EPSILON));
+      }
+    }
+  }
+  //debug
+  if (TraceUI::m_debug) {
+    isect i;
+    if(intersections.empty()==false){
+      i = intersections[0];
+    }
+    addToIntersectCache(std::make_pair(new ray(r), new isect(i)));
+  }
+  //should be a list of trans isects, and one opaque at the end
+  return intersections;
 }
 
 TextureMap *Scene::getTexture(string name) {

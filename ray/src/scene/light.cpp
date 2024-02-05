@@ -7,17 +7,47 @@
 #include <glm/gtx/io.hpp>
 
 using namespace std;
+extern bool debugMode;
 
 double DirectionalLight::distanceAttenuation(const glm::dvec3 &) const {
   // distance to light is infinite, so f(di) goes to 0.  Return 1.
   return 1.0;
 }
 
-glm::dvec3 DirectionalLight::shadowAttenuation(const ray &r,
-                                               const glm::dvec3 &p) const {
-  // YOUR CODE HERE:
-  // You should implement shadow-handling code here.
-  return glm::dvec3(1.0, 1.0, 1.0);
+glm::dvec3 DirectionalLight::shadowAttenuation(ray &shadow_ray, const std::vector<isect> &intersect_list) const {
+  glm::dvec3 atten_color = this->getColor();
+  for(int isect_index = 0; isect_index < intersect_list.size();isect_index+=2){
+    isect cur_isect = intersect_list[isect_index];
+    //if current material is not transparent, it should be the last, do nothing and exist loop
+    if(cur_isect.getMaterial().Trans() == false){
+      //the opaque intersection better be the last!
+      if(isect_index != intersect_list.size()-1){
+        std::cout<<"Error! There is an opaque intersection before the end of the intersection list"<<std::endl;
+      }
+      //hitting an opaque object means no light gets through
+      atten_color = glm::dvec3(0, 0, 0);
+    }
+    //if material is transparent, get the coeeficient
+    else{
+      //if this transparent intersect does not have a followup, we have an issue
+      if(isect_index + 1 >= intersect_list.size()){
+        std::cout<<"Error! This transparent intersection does not have a followup!"<<std::endl;
+      }
+
+      isect next_isect = intersect_list[isect_index + 1];
+      //these two intersections better have the same trans value!
+      if(cur_isect.getMaterial().kt(cur_isect) != next_isect.getMaterial().kt(next_isect)){
+        std::cout<<"Error! This transparent intersection's followup has a different kt value!"<<std::endl;
+      }
+      glm::dvec3 kt = cur_isect.getMaterial().kt(cur_isect);
+      glm::dvec3 cur_position = shadow_ray.at(cur_isect.getT());
+      glm::dvec3 next_position = shadow_ray.at(next_isect.getT());
+      double dist = glm::length(next_position - cur_position);
+      glm::dvec3 atten_coeff = glm::dvec3(pow(kt[0], dist), pow(kt[1], dist), pow(kt[2], dist));
+      atten_color = atten_color * atten_coeff;
+    }
+  }
+  return atten_color;
 }
 
 glm::dvec3 DirectionalLight::getColor() const { return color; }
@@ -55,11 +85,40 @@ double PointLight::getDistance(const glm::dvec3 &P) const{
   return glm::length(position - P);
 }
 
-glm::dvec3 PointLight::shadowAttenuation(const ray &r,
-                                         const glm::dvec3 &p) const {
-  // YOUR CODE HERE:
-  // You should implement shadow-handling code here.
-  return glm::dvec3(1, 1, 1);
+glm::dvec3 PointLight::shadowAttenuation(ray &shadow_ray, const std::vector<isect> &intersect_list) const {
+  glm::dvec3 atten_color = this->getColor();
+  for(int isect_index = 0; isect_index < intersect_list.size();isect_index+=2){
+    isect cur_isect = intersect_list[isect_index];
+    //if current material is not transparent, it should be the last, do nothing and exist loop
+    if(cur_isect.getMaterial().Trans() == false){
+      //the opaque intersection better be the last!
+      if(isect_index != intersect_list.size()-1){
+        std::cout<<"Error! There is an opaque intersection before the end of the intersection list"<<std::endl;
+      }
+      //hitting an opaque object means no light gets through
+      atten_color = glm::dvec3(0, 0, 0);
+    }
+    //if material is transparent, get the coeeficient
+    else{
+      //if this transparent intersect does not have a followup, we have an issue
+      if(isect_index + 1 >= intersect_list.size()){
+        std::cout<<"Error! This transparent intersection does not have a followup!"<<std::endl;
+      }
+
+      isect next_isect = intersect_list[isect_index + 1];
+      //these two intersections better have the same trans value!
+      if(cur_isect.getMaterial().kt(cur_isect) != next_isect.getMaterial().kt(next_isect)){
+        std::cout<<"Error! This transparent intersection's followup has a different kt value!"<<std::endl;
+      }
+      glm::dvec3 kt = cur_isect.getMaterial().kt(cur_isect);
+      glm::dvec3 cur_position = shadow_ray.at(cur_isect.getT());
+      glm::dvec3 next_position = shadow_ray.at(next_isect.getT());
+      double dist = glm::length(next_position - cur_position);
+      glm::dvec3 atten_coeff = glm::dvec3(pow(kt[0], dist), pow(kt[1], dist), pow(kt[2], dist));
+      atten_color = atten_color * atten_coeff;
+    }
+  }
+  return atten_color;
 }
 
 #define VERBOSE 0
