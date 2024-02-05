@@ -42,13 +42,21 @@ glm::dvec3 Material::shade(Scene *scene, const ray &r, const isect &i) const {
   //    .
   //    .
   // }
+  if(debugMode){
+    //std::cout<<"isect.t: "<<i.getT()<<std::endl;
+  }
+
 
   //check all lights
   glm::dvec3 isect_point = r.getPosition() + r.getDirection() * (i.getT()-RAY_EPSILON);       //current intersect point
   glm::dvec3 pos = r.at(i.getT());
   glm::dvec3 color = ke(i); //Emissivity
+  //ambient light
   color += ka(i) * scene->ambient();
-
+  if(debugMode){
+    //std::cout<<"ka: "<< ka(i)<<"|| ambient: "<<scene->ambient()<<std::endl;
+  }
+  //scene lights
   for(const auto& pLight : scene->getAllLights()){
     glm::dvec3 light_direction = pLight->getDirection(isect_point);              //direction to light
 
@@ -81,6 +89,10 @@ glm::dvec3 Material::shade(Scene *scene, const ray &r, const isect &i) const {
       //diffusal
       glm::dvec3 diffusal = kd(i) * glm::max(glm::dot(norm, dir), 0.0) * pLight->getColor() * dist_atten;
       color+=diffusal;
+      if(debugMode){
+        //std::cout<<"kd: "<<kd(i)<<"|| angle coeff: "<<glm::max(glm::dot(norm, dir), 0.0)<<"|| light color: "<<
+        //  pLight->getColor()<<"|| dist_atten: "<<dist_atten<<std::endl;
+      }
 
       //specular
       glm::dvec3 viewDir = r.getDirection();
@@ -88,6 +100,9 @@ glm::dvec3 Material::shade(Scene *scene, const ray &r, const isect &i) const {
       double specAngle = max(glm::dot(viewDir, reflectedDir), 0.0);
       glm::dvec3 spec = ks(i) * pow(specAngle, shininess(i)) * pLight->getColor() * dist_atten;
       color += spec;
+      if(debugMode){
+        //std::cout<<"ks: "<<ks(i)<<"|| spec coeff: "<<pow(specAngle, shininess(i))<<std::endl;
+      }
     }
 
   }
@@ -130,10 +145,12 @@ glm::dvec3 TextureMap::getPixelAt(int x, int y) const {
 }
 
 glm::dvec3 MaterialParameter::value(const isect &is) const {
-  if (0 != _textureMap)
+  if (0 != _textureMap){
     return _textureMap->getMappedValue(is.getUVCoordinates());
-  else
+  }
+  else{
     return _value;
+  }
 }
 
 double MaterialParameter::intensityValue(const isect &is) const {

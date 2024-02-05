@@ -144,6 +144,7 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
 		  glm::dvec3 ray_dir = r.getDirection();
 		  glm::dvec3 norm = i.getN();
 
+      // reflection
      if(glm::length(m.kr(i)) != 0){
           glm::dvec3 ref = glm::reflect(ray_dir, i.getN());
           ref = glm::normalize(ref);
@@ -203,6 +204,9 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
   std::cerr << "== depth: " << depth + 1 << " done, returning: " << colorC
             << std::endl;
 #endif
+if(debugMode){
+  //std::cout<<colorC<<std::endl;
+}
   return colorC;
 }
 

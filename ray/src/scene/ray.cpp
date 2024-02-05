@@ -3,10 +3,24 @@
 #include "material.h"
 #include "scene.h"
 #include <iostream>
-
+extern bool debugMode;
 
 const Material &isect::getMaterial() const {
   //std::cout << typeid(obj).name() << "\n";
+  /*
+  if(debugMode){
+    if(material){
+      std::cout<<"yes material";
+    }
+    else{
+      Material test_material = obj->getMaterial();
+      //if(test_material!=nullptr){
+        //std::cout<<m
+      //}
+    }
+    std::cout<<std::endl;
+  }
+  */
   return material ? *material : obj->getMaterial();
 }
 

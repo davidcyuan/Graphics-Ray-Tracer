@@ -137,17 +137,27 @@ bool TrimeshFace::intersectLocal(ray &r, isect &i) const {
     //get Bary Coords here
     //p1 = A, p2 = B, p3 = C, c = position
     //!!!!
+    
     if(!this->parent->vertColors.empty()){
       glm::dvec3 bay_coords = bay_coordinate(A, B, C, position);
-      glm::dvec3 vert_color_0 = parent->vertColors[id[0]];
-      glm::dvec3 vert_color_1 = parent->vertColors[id[1]];
-      glm::dvec3 vert_color_2 = parent->vertColors[id[2]];
-      glm::devec3 mixed_color = vert_color_0 * bay_coords[0] + vert_color_1 * bay_coords[1] + vert_color_2 * bay_coords[2];
+      //color mixing
+      glm::dvec3 vert_color_0 = parent->vertColors[ids[0]];
+      glm::dvec3 vert_color_1 = parent->vertColors[ids[1]];
+      glm::dvec3 vert_color_2 = parent->vertColors[ids[2]];
+      glm::dvec3 mixed_color = vert_color_0 * bay_coords[0] + vert_color_1 * bay_coords[1] + vert_color_2 * bay_coords[2];
+      //norm mixing
+      glm::dvec3 vert_normal_0 = parent->normals[ids[0]];
+      glm::dvec3 vert_normal_1 = parent->normals[ids[1]];
+      glm::dvec3 vert_normal_2 = parent->normals[ids[2]];
+      glm::dvec3 mixed_normal = vert_normal_0 * bay_coords[0] + vert_normal_1 * bay_coords[1] + vert_normal_2 * bay_coords[2];
+      mixed_normal = glm::normalize(mixed_normal);
 
       Material material_copy = i.getMaterial();
       material_copy.setDiffuse(mixed_color);
       i.setMaterial(material_copy);
+      i.setN(mixed_normal);
     }
+    
 
 
 
@@ -156,7 +166,7 @@ bool TrimeshFace::intersectLocal(ray &r, isect &i) const {
     return false;
   }
 }
-glm::dvec3 bay_coordinate(glm::dvec3 p1, glm::dvec3 p2, glm::dvec3 p3, glm::dvec3 c){
+glm::dvec3 TrimeshFace::bay_coordinate(glm::dvec3 p1, glm::dvec3 p2, glm::dvec3 p3, glm::dvec3 c) const{
   //we want to end up with [a_1 \n a_2] = [b2, b3 \n c2, c3] x [m2 \n m3]
   //then use the inverse to get m2 and m3
   double a_1 = glm::dot(c - p1, p2 - p1);
