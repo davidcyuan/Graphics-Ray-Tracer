@@ -146,14 +146,15 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
 
       // reflection
      if(glm::length(m.kr(i)) != 0){
-          glm::dvec3 ref = glm::reflect(ray_dir, i.getN());
-          ref = glm::normalize(ref);
-          ray reflect_ray(ray_pos, ref, ray_dir, ray::REFLECTION);
-          colorC += traceRay(reflect_ray, thresh, depth-1, t) * m.kr(i);
+       glm::dvec3 opp = - r.getDirection();
+         glm::dvec3 reflect = 2 * glm::dot(opp, norm) * norm - opp;
+			    ray reflectRay = ray(ray_pos, reflect, glm::dvec3(1, 1, 1), ray::REFLECTION);
+			    double zero = 0;
+			    colorC += m.kr(i) * traceRay(reflectRay, thresh, depth - 1, zero);
       }
 
       //check if materical has non zero transmissive index
-      /*if(m.Trans()){
+      if(m.Trans()){
             //get the refractive index
             double d_prod = glm::dot(ray_dir, norm);
             double eta = m.index(i);
@@ -172,19 +173,19 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
             }
             double tir = (1.0 - (eta*eta * (1.0 - (d_prod * d_prod))));
             if(tir > 0){
-                glm::dvec3 refrac = glm::refract(ray_dir, norm, eta);
-				        refrac = glm::normalize(refrac);
-				        ray refract_ray(ray_pos, refrac, ray_dir, ray::REFRACTION);
+                glm::dvec3 refrac = glm::normalize(glm::refract(glm::normalize(ray_dir), glm::normalize(norm), eta));
+				        ray refract_ray = ray(ray_pos, refrac, glm::dvec3(1,1,1), ray::REFRACTION);
 				        glm::dvec3 col = traceRay(refract_ray, thresh, depth-1, t);
-				        colorC += col * m.kt(i);
+				       colorC += col * glm::pow(m.kt(i), glm::dvec3(t));
             } else{
                 //total internal reflection
-                glm::dvec3 ref = glm::reflect(ray_dir, i.getN());
-                ref = glm::normalize(ref);
-                ray reflect_ray(ray_pos, ref, ray_dir, ray::REFLECTION);
-                colorC += traceRay(reflect_ray, thresh, depth-1, t) * m.kr(i);
+                glm::dvec3 opp = - r.getDirection();
+                glm::dvec3 reflect = 2 * glm::dot(opp, norm) * norm - opp;
+			          ray reflectRay = ray(ray_pos, reflect, glm::dvec3(1, 1, 1), ray::REFLECTION);
+			          double zero = 0;
+			          colorC += m.kr(i) * traceRay(reflectRay, thresh, depth - 1, zero);
             }
-      } */
+      } 
           
     }
   } else {
@@ -197,7 +198,9 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
     // traceUI->getCubeMap();
     //       Check traceUI->cubeMap() to see if cubeMap is loaded
     //       and enabled.
-
+    if(traceUI->cubeMap()){
+			return traceUI->getCubeMap()->getColor(r);
+		}
     colorC = glm::dvec3(0.0, 0.0, 0.0);
   }
 #if VERBOSE
