@@ -142,9 +142,6 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
 
     const Material &m = i.getMaterial();
     colorC = m.shade(scene.get(), r, i);
-     if(debugMode){
-                  std::cout<<depth<<std::endl;
-                }
     if(depth > 0){
         
       glm::dvec3 ray_pos = r.at(i.getT());
@@ -170,6 +167,9 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
             //see if we are inside the object
             bool inside = false;
             if (d_prod > 0) {
+              if(debugMode){
+                std::cout<<"Sophia inside check"<<std::endl;
+              }
               // Inside the object, invert the normal
               norm = -norm;
               inside = true;
@@ -178,6 +178,9 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
               index= 0;
               norm = {0.0, 0.0, 0.0};
             } else{
+              if(debugMode){
+                std::cout<<"Sophia oustide check"<<std::endl;
+              }
               //going outside the object
               index= 1.0 / index;
             }
@@ -196,11 +199,6 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
                 } else{
                   colorC += col * glm::pow(m.kt(i), glm::dvec3(dummy.getT()));
                 }
-               if(debugMode){
-                  //std::cout<<col<<std::endl;
-                  std::cout<<m.kt(i)<<std::endl;
-                   std::cout<<i.getT()<<std::endl;
-              }
             } else{
                 //total internal reflection
                /* glm::dvec3 opp = - r.getDirection();
@@ -329,7 +327,6 @@ bool RayTracer::loadScene(const char *fn) {
 }
 
 void RayTracer::traceSetup(int w, int h) {
-  cout << "traceSetup called"<<std::endl;
   size_t newBufferSize = w * h * 3;
   if (newBufferSize != buffer.size()) {
     bufferSize = newBufferSize;

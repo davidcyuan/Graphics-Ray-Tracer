@@ -17,9 +17,23 @@ Material::~Material() {}
 // the color of that point.
 glm::dvec3 Material::shade(Scene *scene, const ray &r, const isect &i) const {
   //get initial position and color
-  glm::dvec3 isect_point = r.at(i.getT()-RAY_EPSILON);  
+  glm::dvec3 isect_point = r.at(i.getT()-RAY_EPSILON*2);  
   glm::dvec3 pos = r.at(i.getT());
   glm::dvec3 color = ke(i); //Emissivity
+  //check if current point is inside or outside object
+  bool is_inside = false;
+  if(glm::dot(i.getN(), r.getDirection())>0){
+    if(debugMode){
+      std::cout<<"Inside Object!"<<std::endl;
+      std::cout<<"dot product: "<<glm::dot(i.getN(), r.getDirection())<<std::endl;
+    }
+    is_inside = true;
+  }
+  else{
+    if(debugMode){
+      std::cout<<"Outside Object"<<std::endl;
+    }
+  }
   //ambient light
   color += ka(i) * scene->ambient();
 
@@ -34,39 +48,50 @@ glm::dvec3 Material::shade(Scene *scene, const ray &r, const isect &i) const {
     shadow_ray.setPosition(isect_point);
     shadow_ray.setDirection(glm::normalize(light_direction));
     //get all shadow ray collisions, including last opaque object (if it exists)
+    //this is with a backed up point
     std::vector<isect> shadow_sects = scene->intersect_list(shadow_ray, (Light *)pLight);
+    //if inside object, then we need to add current intersection in
+    if(is_inside){
+      isect temp_i = i;
+      //if inside, intersection should never be empty
+      if(shadow_sects.empty()){
+        std::cout<<"Error: shadow_sects empty while inside object"<<std::endl;
+        std::cout<<isect_point<<std::endl;
+        isect temp_i2 = i;
+        shadow_sects.emplace_back(temp_i);
+      }
+      shadow_sects.insert(shadow_sects.begin(), temp_i);
+    }
     if(debugMode){
-      std::cout<<"shadow_sects.size(): "<<shadow_sects.size()<<std::endl;
+      //std::cout<<"shadow_sects.size(): "<<shadow_sects.size()<<std::endl;
     }
     //no intersections, path to light clear
     //ignore check
-    if(true){
-      glm::dvec3 dir = pLight->getDirection(pos);
-      glm::dvec3 norm = i.getN(); 
+    glm::dvec3 dir = pLight->getDirection(pos);
+    glm::dvec3 norm = i.getN(); 
 
-      //distance attenuation
-      double dist_atten = pLight->distanceAttenuation(pos);
-      //shadow attenuation
-      glm::dvec3 atten_light = pLight->shadowAttenuation(shadow_ray, shadow_sects);
+    //distance attenuation
+    double dist_atten = pLight->distanceAttenuation(pos);
+    //shadow attenuation
+    glm::dvec3 atten_light = pLight->shadowAttenuation(shadow_sects);
 
 
-      //diffusal
-      glm::dvec3 diffusal = kd(i) * glm::max(glm::dot(norm, dir), 0.0) * atten_light * dist_atten;
-      color+=diffusal;
-      if(debugMode){
-        //std::cout<<"kd: "<<kd(i)<<"|| angle coeff: "<<glm::max(glm::dot(norm, dir), 0.0)<<"|| light color: "<<
-        //  pLight->getColor()<<"|| dist_atten: "<<dist_atten<<std::endl;
-      }
+    //diffusal
+    glm::dvec3 diffusal = kd(i) * glm::max(glm::dot(norm, dir), 0.0) * atten_light * dist_atten;
+    color+=diffusal;
+    if(debugMode){
+      //std::cout<<"kd: "<<kd(i)<<"|| angle coeff: "<<glm::max(glm::dot(norm, dir), 0.0)<<"|| light color: "<<
+      //  pLight->getColor()<<"|| dist_atten: "<<dist_atten<<std::endl;
+    }
 
-      //specular
-      glm::dvec3 viewDir = r.getDirection();
-      glm::dvec3 reflectedDir = glm::reflect(dir, i.getN());
-      double specAngle = max(glm::dot(viewDir, reflectedDir), 0.0);
-      glm::dvec3 spec = ks(i) * pow(specAngle, shininess(i)) * atten_light * dist_atten;
-      color += spec;
-      if(debugMode){
-        //std::cout<<"ks: "<<ks(i)<<"|| spec coeff: "<<pow(specAngle, shininess(i))<<std::endl;
-      }
+    //specular
+    glm::dvec3 viewDir = r.getDirection();
+    glm::dvec3 reflectedDir = glm::reflect(dir, i.getN());
+    double specAngle = max(glm::dot(viewDir, reflectedDir), 0.0);
+    glm::dvec3 spec = ks(i) * pow(specAngle, shininess(i)) * atten_light * dist_atten;
+    color += spec;
+    if(debugMode){
+      //std::cout<<"ks: "<<ks(i)<<"|| spec coeff: "<<pow(specAngle, shininess(i))<<std::endl;
     }
 
   }

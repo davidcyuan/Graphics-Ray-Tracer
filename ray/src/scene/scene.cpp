@@ -132,6 +132,7 @@ bool Scene::intersect(ray &r, isect &i) const {
   }
   return have_one;
 }
+//r is with backed by epsilon point
 std::vector<isect> Scene::intersect_list(ray &r, Light * pLight) const{
   //array of isect objects
   std::vector<isect> intersections;
@@ -145,11 +146,14 @@ std::vector<isect> Scene::intersect_list(ray &r, Light * pLight) const{
   //!hitwall && !hitlight
   while(!hitwall && !hitlight&&!hit_opaque_obj){
     if(debugMode){
-      std::cout<<"intersect_list time: "<<time<<std::endl;
+      //std::cout<<"intersect_list time: "<<time<<std::endl;
     }
     isect cur_isect;
     bool hitobject = this->intersect(cur_ray, cur_isect);
     if(hitobject == false){
+      if(debugMode){
+        //std::cout<<"Didn't hit any objects"<<std::endl;
+      }
       hitwall = true;
     }
     else{
@@ -157,10 +161,16 @@ std::vector<isect> Scene::intersect_list(ray &r, Light * pLight) const{
       double light_dist = pLight->getDistance(r.getPosition());
       //shadow ray hits light before closest object
       if(light_dist > 0 && light_dist < shadow_sect_dist){
+        if(debugMode){
+          //std::cout<<"Hit light first"<<std::endl;
+        }
         hitlight = true;
       }
       //shadow ray hits opaque object
       else if(cur_isect.getMaterial().Trans()==false){
+        if(debugMode){
+          //std::cout<<"Hit Opaque object"<<std::endl;
+        }
         hit_opaque_obj = true;
         //the time it took to travel the new intersection, added onto original time;
         time = time + cur_isect.getT();
@@ -169,7 +179,9 @@ std::vector<isect> Scene::intersect_list(ray &r, Light * pLight) const{
       }
       //shadow ray hits trans object
       else{
-
+        if(debugMode){
+          //std::cout<<"Hit trans object"<<std::endl;
+        }
         //the time it took to travel the new intersection, added onto original time;
         time = time + cur_isect.getT();
         cur_isect.setT(time);

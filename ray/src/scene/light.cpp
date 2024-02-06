@@ -14,7 +14,7 @@ double DirectionalLight::distanceAttenuation(const glm::dvec3 &) const {
   return 1.0;
 }
 
-glm::dvec3 DirectionalLight::shadowAttenuation(ray &shadow_ray, const std::vector<isect> &intersect_list) const {
+glm::dvec3 DirectionalLight::shadowAttenuation(const std::vector<isect> &intersect_list) const {
   glm::dvec3 atten_color = this->getColor();
   for(int isect_index = 0; isect_index < intersect_list.size();isect_index+=2){
     isect cur_isect = intersect_list[isect_index];
@@ -40,9 +40,10 @@ glm::dvec3 DirectionalLight::shadowAttenuation(ray &shadow_ray, const std::vecto
         std::cout<<"Error! This transparent intersection's followup has a different kt value!"<<std::endl;
       }
       glm::dvec3 kt = cur_isect.getMaterial().kt(cur_isect);
-      glm::dvec3 cur_position = shadow_ray.at(cur_isect.getT());
-      glm::dvec3 next_position = shadow_ray.at(next_isect.getT());
-      double dist = glm::length(next_position - cur_position);
+      //assume shadowray is normalized, so time diff = dist diff
+      double cur_time = cur_isect.getT();
+      double next_time = next_isect.getT();
+      double dist = next_time - cur_time;
       glm::dvec3 atten_coeff = glm::dvec3(pow(kt[0], dist), pow(kt[1], dist), pow(kt[2], dist));
       atten_color = atten_color * atten_coeff;
     }
@@ -85,7 +86,7 @@ double PointLight::getDistance(const glm::dvec3 &P) const{
   return glm::length(position - P);
 }
 
-glm::dvec3 PointLight::shadowAttenuation(ray &shadow_ray, const std::vector<isect> &intersect_list) const {
+glm::dvec3 PointLight::shadowAttenuation(const std::vector<isect> &intersect_list) const {
   glm::dvec3 atten_color = this->getColor();
   for(int isect_index = 0; isect_index < intersect_list.size();isect_index+=2){
     isect cur_isect = intersect_list[isect_index];
@@ -111,9 +112,10 @@ glm::dvec3 PointLight::shadowAttenuation(ray &shadow_ray, const std::vector<isec
         std::cout<<"Error! This transparent intersection's followup has a different kt value!"<<std::endl;
       }
       glm::dvec3 kt = cur_isect.getMaterial().kt(cur_isect);
-      glm::dvec3 cur_position = shadow_ray.at(cur_isect.getT());
-      glm::dvec3 next_position = shadow_ray.at(next_isect.getT());
-      double dist = glm::length(next_position - cur_position);
+      //assume shadowray is normalized, so time diff = dist diff
+      double cur_time = cur_isect.getT();
+      double next_time = next_isect.getT();
+      double dist = next_time - cur_time;
       glm::dvec3 atten_coeff = glm::dvec3(pow(kt[0], dist), pow(kt[1], dist), pow(kt[2], dist));
       atten_color = atten_color * atten_coeff;
     }
