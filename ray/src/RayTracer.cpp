@@ -47,8 +47,9 @@ glm::dvec3 RayTracer::trace(double x, double y) {
         ray::VISIBILITY);
   scene->getCamera().rayThrough(x, y, r);
   double dummy;
+  isect isect_dummy;
   glm::dvec3 ret =
-      traceRay(r, glm::dvec3(1.0, 1.0, 1.0), traceUI->getDepth(), dummy);
+      traceRay(r, glm::dvec3(1.0, 1.0, 1.0), traceUI->getDepth(), dummy, isect_dummy);
   ret = glm::clamp(ret, 0.0, 1.0);
   return ret;
 }
@@ -118,8 +119,9 @@ glm::dvec3 RayTracer::tracePixel(int i, int j) {
 // called from here) to handle reflection, refraction, etc etc.
 
 //? Actual ray trace
+//dummy intersect object that gets filled with previous ray intersection in order to calculate distance in recursive traceRay calls
 glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
-                               double &t) {
+                               double &t, isect &intersect) {
   isect i;
   glm::dvec3 colorC;
 #if VERBOSE
@@ -127,12 +129,28 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
 #endif
   
   if (scene->intersect(r, i)) {
+    intersect = i;
+    // YOUR CODE HERE
+
+    // An intersection occurred!  We've got work to do. For now, this code gets
+    // the material for the surface that was intersected, and asks that material
+    // to provide a color for the ray.
+
+    // This is a great place to insert code for recursive ray tracing. Instead
+    // of just returning the result of shade(), add some more steps: add in the
+    // contributions from reflected and refracted rays.
+
     const Material &m = i.getMaterial();
     colorC = m.shade(scene.get(), r, i);
+     if(debugMode){
+                  std::cout<<depth<<std::endl;
+                }
     if(depth > 0){
+        
       glm::dvec3 ray_pos = r.at(i.getT());
 		  glm::dvec3 ray_dir = r.getDirection();
 		  glm::dvec3 norm = i.getN();
+
 
       // reflection
      if(glm::length(m.kr(i)) != 0){
@@ -140,43 +158,61 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
          glm::dvec3 reflect = 2 * glm::dot(opp, norm) * norm - opp;
 			    ray reflectRay = ray(ray_pos, reflect, glm::dvec3(1, 1, 1), ray::REFLECTION);
 			    double zero = 0;
-			    colorC += m.kr(i) * traceRay(reflectRay, thresh, depth - 1, zero);
+          isect dummy;
+			    colorC += m.kr(i) * traceRay(reflectRay, thresh, depth - 1, zero, dummy);
       }
 
       //check if materical has non zero transmissive index
       if(m.Trans()){
             //get the refractive index
             double d_prod = glm::dot(ray_dir, norm);
-            double eta = m.index(i);
+            double index= m.index(i);
             //see if we are inside the object
+            bool inside = false;
             if (d_prod > 0) {
-              // Inside the object, invert the normal and reciprocal of the refractive index
+              // Inside the object, invert the normal
               norm = -norm;
-              //eta = 1.0 / eta;
-              //case when ray parallel to surface
+              inside = true;
            } else if (d_prod == 0){
-              eta = 0;
+            //case when ray parallel to surface
+              index= 0;
               norm = {0.0, 0.0, 0.0};
             } else{
-              //norm = -norm;
-              eta = 1.0 / eta;
+              //going outside the object
+              index= 1.0 / index;
             }
-            double tir = (1.0 - (eta*eta * (1.0 - (d_prod * d_prod))));
-            if(tir > 0){
-                glm::dvec3 refrac = glm::normalize(glm::refract(glm::normalize(ray_dir), glm::normalize(norm), eta));
-				        ray refract_ray = ray(ray_pos, refrac, glm::dvec3(1,1,1), ray::REFRACTION);
-				        glm::dvec3 col = traceRay(refract_ray, thresh, depth-1, t);
-				       colorC += col * glm::pow(m.kt(i), glm::dvec3(t));
+            double cos = (1.0 - (index* index* (1.0 - (d_prod * d_prod))));
+            if(cos > 0){
+                glm::dvec3 refrac = glm::refract(glm::normalize(ray_dir), glm::normalize(norm), index);
+				        ray refract_ray = ray(ray_pos + RAY_EPSILON * ray_dir, refrac, glm::dvec3(1,1,1), ray::REFRACTION);
+                isect dummy;
+				        glm::dvec3 col = traceRay(refract_ray, thresh, depth-1, t, dummy);
+                if(glm::length(r.getDirection()) < 1 - RAY_EPSILON || glm::length(r.getDirection()) > 1 + RAY_EPSILON){
+                  std::cout<<"ray is not normalized";
+                }
+                
+                if(inside){
+                  colorC += col;
+                } else{
+                  colorC += col * glm::pow(m.kt(i), glm::dvec3(dummy.getT()));
+                }
+               if(debugMode){
+                  //std::cout<<col<<std::endl;
+                  std::cout<<m.kt(i)<<std::endl;
+                   std::cout<<i.getT()<<std::endl;
+              }
             } else{
                 //total internal reflection
-                glm::dvec3 opp = - r.getDirection();
+               /* glm::dvec3 opp = - r.getDirection();
                 glm::dvec3 reflect = 2 * glm::dot(opp, norm) * norm - opp;
 			          ray reflectRay = ray(ray_pos, reflect, glm::dvec3(1, 1, 1), ray::REFLECTION);
 			          double zero = 0;
-			          colorC += m.kr(i) * traceRay(reflectRay, thresh, depth - 1, zero);
+			          colorC += m.kr(i) * traceRay(reflectRay, thresh, depth - 1, zero);*/
             }
       } 
           
+    } else{
+      return colorC;
     }
   } else {
     // No intersection. This ray travels to infinity, so we color
@@ -200,6 +236,7 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
 if(debugMode){
   //std::cout<<colorC<<std::endl;
 }
+  //std::cout<<colorC<<std::endl;
   return colorC;
 }
 
@@ -292,6 +329,7 @@ bool RayTracer::loadScene(const char *fn) {
 }
 
 void RayTracer::traceSetup(int w, int h) {
+  cout << "traceSetup called"<<std::endl;
   size_t newBufferSize = w * h * 3;
   if (newBufferSize != buffer.size()) {
     bufferSize = newBufferSize;
