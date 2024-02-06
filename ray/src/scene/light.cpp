@@ -30,11 +30,15 @@ glm::dvec3 DirectionalLight::shadowAttenuation(const std::vector<isect> &interse
     //if material is transparent, get the coeeficient
     else{
       //if this transparent intersect does not have a followup, we have an issue
+      isect next_isect;
       if(isect_index + 1 >= intersect_list.size()){
         std::cout<<"Error! This transparent intersection does not have a followup!"<<std::endl;
+        next_isect = cur_isect;
       }
-
-      isect next_isect = intersect_list[isect_index + 1];
+      else{
+        next_isect = intersect_list[isect_index + 1];
+      }
+      
       //these two intersections better have the same trans value!
       if(cur_isect.getMaterial().kt(cur_isect) != next_isect.getMaterial().kt(next_isect)){
         std::cout<<"Error! This transparent intersection's followup has a different kt value!"<<std::endl;
@@ -102,11 +106,15 @@ glm::dvec3 PointLight::shadowAttenuation(const std::vector<isect> &intersect_lis
     //if material is transparent, get the coeeficient
     else{
       //if this transparent intersect does not have a followup, we have an issue
+      isect next_isect;
       if(isect_index + 1 >= intersect_list.size()){
         std::cout<<"Error! This transparent intersection does not have a followup!"<<std::endl;
+        next_isect = cur_isect;
       }
-
-      isect next_isect = intersect_list[isect_index + 1];
+      else{
+        next_isect = intersect_list[isect_index + 1];
+      }
+      
       //these two intersections better have the same trans value!
       if(cur_isect.getMaterial().kt(cur_isect) != next_isect.getMaterial().kt(next_isect)){
         std::cout<<"Error! This transparent intersection's followup has a different kt value!"<<std::endl;
