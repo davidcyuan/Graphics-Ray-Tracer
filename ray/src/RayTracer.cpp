@@ -25,6 +25,7 @@
 using namespace std;
 extern TraceUI *traceUI;
 
+
 // Use this variable to decide if you want to print out debugging messages. Gets
 // set in the "trace single ray" mode in TraceGLWindow, for example.
 bool debugMode = false;
@@ -153,7 +154,7 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
      if(glm::length(m.kr(i)) != 0){
        glm::dvec3 opp = - r.getDirection();
          glm::dvec3 reflect = 2 * glm::dot(opp, norm) * norm - opp;
-			    ray reflectRay = ray(ray_pos, reflect, glm::dvec3(1, 1, 1), ray::REFLECTION);
+			    ray reflectRay = ray(ray_pos + RAY_EPSILON * norm, reflect, glm::dvec3(1, 1, 1), ray::REFLECTION);
 			    double zero = 0;
           isect dummy;
 			    colorC += m.kr(i) * traceRay(reflectRay, thresh, depth - 1, zero, dummy);
@@ -187,7 +188,7 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
             double cos = (1.0 - (index* index* (1.0 - (d_prod * d_prod))));
             if(cos > 0){
                 glm::dvec3 refrac = glm::refract(glm::normalize(ray_dir), glm::normalize(norm), index);
-				        ray refract_ray = ray(ray_pos + RAY_EPSILON * ray_dir, refrac, glm::dvec3(1,1,1), ray::REFRACTION);
+				        ray refract_ray = ray(ray_pos, refrac, glm::dvec3(1,1,1), ray::REFRACTION);
                 isect dummy;
 				        glm::dvec3 col = traceRay(refract_ray, thresh, depth-1, t, dummy);
                 if(glm::length(r.getDirection()) < 1 - RAY_EPSILON || glm::length(r.getDirection()) > 1 + RAY_EPSILON){
@@ -201,11 +202,12 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
                 }
             } else{
                 //total internal reflection
-               /* glm::dvec3 opp = - r.getDirection();
+                glm::dvec3 opp = - r.getDirection();
                 glm::dvec3 reflect = 2 * glm::dot(opp, norm) * norm - opp;
 			          ray reflectRay = ray(ray_pos, reflect, glm::dvec3(1, 1, 1), ray::REFLECTION);
 			          double zero = 0;
-			          colorC += m.kr(i) * traceRay(reflectRay, thresh, depth - 1, zero);*/
+                isect dummy;
+			          colorC += m.kr(i) * traceRay(reflectRay, thresh, depth - 1, zero, dummy);
             }
       } 
           
