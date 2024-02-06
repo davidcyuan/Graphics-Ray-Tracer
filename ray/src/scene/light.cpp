@@ -22,7 +22,7 @@ glm::dvec3 DirectionalLight::shadowAttenuation(const std::vector<isect> &interse
     if(cur_isect.getMaterial().Trans() == false){
       //the opaque intersection better be the last!
       if(isect_index != intersect_list.size()-1){
-        std::cout<<"Error! There is an opaque intersection before the end of the intersection list"<<std::endl;
+        //std::cout<<"Error! There is an opaque intersection before the end of the intersection list"<<std::endl;
       }
       //hitting an opaque object means no light gets through
       atten_color = glm::dvec3(0, 0, 0);
@@ -32,7 +32,7 @@ glm::dvec3 DirectionalLight::shadowAttenuation(const std::vector<isect> &interse
       //if this transparent intersect does not have a followup, we have an issue
       isect next_isect;
       if(isect_index + 1 >= intersect_list.size()){
-        std::cout<<"Error! This transparent intersection does not have a followup!"<<std::endl;
+        //std::cout<<"Error! This transparent intersection does not have a followup!"<<std::endl;
         next_isect = cur_isect;
       }
       else{
@@ -41,7 +41,7 @@ glm::dvec3 DirectionalLight::shadowAttenuation(const std::vector<isect> &interse
       
       //these two intersections better have the same trans value!
       if(cur_isect.getMaterial().kt(cur_isect) != next_isect.getMaterial().kt(next_isect)){
-        std::cout<<"Error! This transparent intersection's followup has a different kt value!"<<std::endl;
+        //std::cout<<"Error! This transparent intersection's followup has a different kt value!"<<std::endl;
       }
       glm::dvec3 kt = cur_isect.getMaterial().kt(cur_isect);
       //assume shadowray is normalized, so time diff = dist diff
@@ -98,7 +98,7 @@ glm::dvec3 PointLight::shadowAttenuation(const std::vector<isect> &intersect_lis
     if(cur_isect.getMaterial().Trans() == false){
       //the opaque intersection better be the last!
       if(isect_index != intersect_list.size()-1){
-        std::cout<<"Error! There is an opaque intersection before the end of the intersection list"<<std::endl;
+        //std::cout<<"Error! There is an opaque intersection before the end of the intersection list"<<std::endl;
       }
       //hitting an opaque object means no light gets through
       atten_color = glm::dvec3(0, 0, 0);
@@ -108,7 +108,7 @@ glm::dvec3 PointLight::shadowAttenuation(const std::vector<isect> &intersect_lis
       //if this transparent intersect does not have a followup, we have an issue
       isect next_isect;
       if(isect_index + 1 >= intersect_list.size()){
-        std::cout<<"Error! This transparent intersection does not have a followup!"<<std::endl;
+        //std::cout<<"Error! This transparent intersection does not have a followup!"<<std::endl;
         next_isect = cur_isect;
       }
       else{
@@ -117,7 +117,7 @@ glm::dvec3 PointLight::shadowAttenuation(const std::vector<isect> &intersect_lis
       
       //these two intersections better have the same trans value!
       if(cur_isect.getMaterial().kt(cur_isect) != next_isect.getMaterial().kt(next_isect)){
-        std::cout<<"Error! This transparent intersection's followup has a different kt value!"<<std::endl;
+        //std::cout<<"Error! This transparent intersection's followup has a different kt value!"<<std::endl;
       }
       glm::dvec3 kt = cur_isect.getMaterial().kt(cur_isect);
       //assume shadowray is normalized, so time diff = dist diff

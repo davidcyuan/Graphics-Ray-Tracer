@@ -192,7 +192,7 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
                 isect dummy;
 				        glm::dvec3 col = traceRay(refract_ray, thresh, depth-1, t, dummy);
                 if(glm::length(r.getDirection()) < 1 - RAY_EPSILON || glm::length(r.getDirection()) > 1 + RAY_EPSILON){
-                  std::cout<<"ray is not normalized";
+                  //std::cout<<"ray is not normalized";
                 }
                 
                 if(inside){
