@@ -136,12 +136,12 @@ bool TrimeshFace::intersectLocal(ray &r, isect &i) const {
     i.setT(t_dav);
 
     //color with uv coords
-    if(UVCoords.empty() == false){
+    if(parent->uvCoords.empty()){
       //bay coords
       glm::dvec3 bay_coords = bay_coordinate(A, B, C, position);
-      glm::dvec2 vert_uv_0 = parent->vertColors[ids[0]];
-      glm::dvec2 vert_uv_1 = parent->vertColors[ids[1]];
-      glm::dvec2 vert_uv_2 = parent->vertColors[ids[2]];
+      glm::dvec2 vert_uv_0 = parent->uvCoords[ids[0]];
+      glm::dvec2 vert_uv_1 = parent->uvCoords[ids[1]];
+      glm::dvec2 vert_uv_2 = parent->uvCoords[ids[2]];
       glm::dvec2 mixed_uv = vert_uv_0 * bay_coords[0] + vert_uv_1 * bay_coords[1] + vert_uv_2 * bay_coords[2];
 
       i.setUVCoordinates(mixed_uv);
