@@ -1,6 +1,6 @@
 Names:
   David Yuan: dcy265
-  Sophia Li
+  Sophia Li: sl49428
 Ray Specs:
   Almost all rays created from intersection points are brought backwards by RAY_EPSILON
   Shadowrays for shadow attenuation are instead brought forward by RAY_EPSILON, so as to not add the same intersection point multiple times

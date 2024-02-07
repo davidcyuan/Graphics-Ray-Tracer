@@ -55,7 +55,7 @@ glm::dvec3 Material::shade(Scene *scene, const ray &r, const isect &i) const {
       isect temp_i = i;
       //if inside, intersection should never be empty
       if(shadow_sects.empty()){
-        //std::cout<<"Error: shadow_sects empty while inside object"<<std::endl;
+       // std::cout<<"Error: shadow_sects empty while inside object"<<std::endl;
         //std::cout<<isect_point<<std::endl;
         isect temp_i2 = i;
         shadow_sects.emplace_back(temp_i);
