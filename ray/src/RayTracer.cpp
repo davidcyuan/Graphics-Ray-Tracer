@@ -154,7 +154,7 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
      if(glm::length(m.kr(i)) != 0){
        glm::dvec3 opp = - r.getDirection();
          glm::dvec3 reflect = 2 * glm::dot(opp, norm) * norm - opp;
-			    ray reflectRay = ray(ray_pos + RAY_EPSILON * norm, reflect, glm::dvec3(1, 1, 1), ray::REFLECTION);
+			    ray reflectRay = ray(ray_pos - RAY_EPSILON * ray_dir, reflect, glm::dvec3(1, 1, 1), ray::REFLECTION);
 			    double zero = 0;
           isect dummy;
 			    colorC += m.kr(i) * traceRay(reflectRay, thresh, depth - 1, zero, dummy);
@@ -371,12 +371,37 @@ void RayTracer::traceImage(int w, int h) {
   // Always call traceSetup before rendering anything.
   traceSetup(w, h);
 
-  //trace across 
-  for(int x = 0;x<w;x++){
-  	for(int y = 0;y<h;y++){
-  		tracePixel(x, y);
-  	}
+  //lambda function for trace across 
+  auto lambda = [this](int startX, int endX) {
+    for(int x = startX; x < endX; x++) {
+      for(int y = 0; y < buffer_height; y++) {
+        tracePixel(x, y);
+      }
+    }
+  };
+
+   int numThreads = std::min(threads, (unsigned int)w);
+   int width = w / numThreads;
+
+  std::vector<std::thread> threadPool;
+
+  for(int i = 0; i < numThreads; i++) {
+      int start = i * width;
+      int end;
+      if (i == numThreads - 1) {
+          end = w;
+      } else {
+          end = (i + 1) * width;
+      }
+      threadPool.emplace_back(lambda, start, end);
+    }
+
+  for(auto& thread : threadPool) {
+    thread.join();
   }
+
+
+
 
   // YOUR CODE HERE
   // FIXME: Start one or more threads for ray tracing
