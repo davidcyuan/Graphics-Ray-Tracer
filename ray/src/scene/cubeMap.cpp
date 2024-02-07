@@ -6,7 +6,7 @@ extern TraceUI *traceUI;
 
 glm::dvec3 CubeMap::getColor(ray r) const {
   // YOUR CODE HERE
-  // FIXME: Implement Cube Map here
+  // FIXME: Implement Cube Map here 
   return glm::dvec3();
 }
 

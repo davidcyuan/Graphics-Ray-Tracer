@@ -160,6 +160,8 @@ bool TrimeshFace::intersectLocal(ray &r, isect &i) const {
       glm::dvec3 mixed_normal = vert_normal_0 * bay_coords[0] + vert_normal_1 * bay_coords[1] + vert_normal_2 * bay_coords[2];
       mixed_normal = glm::normalize(mixed_normal);
       i.setN(mixed_normal);
+
+     
     }
 
     return true;
