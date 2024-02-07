@@ -129,15 +129,25 @@ bool TrimeshFace::intersectLocal(ray &r, isect &i) const {
   double v =glm::dot(glm::cross(Cb, position_B), check_normal);
   double w =glm::dot(glm::cross(Ac, position_C), check_normal);
 
+  //there is an intersection, color it
   if (u >= 0.0 && v >= 0.0 && w >= 0.0) {
     i.setN(normal);
     i.setObject(this->parent);
     i.setT(t_dav);
 
-    //get Bary Coords here
-    //p1 = A, p2 = B, p3 = C, c = position
-    //!!!!
-    
+    //color with uv coords
+    if(UVCoords.empty() == false){
+      //bay coords
+      glm::dvec3 bay_coords = bay_coordinate(A, B, C, position);
+      glm::dvec2 vert_uv_0 = parent->vertColors[ids[0]];
+      glm::dvec2 vert_uv_1 = parent->vertColors[ids[1]];
+      glm::dvec2 vert_uv_2 = parent->vertColors[ids[2]];
+      glm::dvec2 mixed_uv = vert_uv_0 * bay_coords[0] + vert_uv_1 * bay_coords[1] + vert_uv_2 * bay_coords[2];
+
+      i.setUVCoordinates(mixed_uv);
+
+    }
+    //color with vertice colors
     if(!this->parent->vertColors.empty()){
       glm::dvec3 bay_coords = bay_coordinate(A, B, C, position);
       //color mixing
@@ -151,6 +161,7 @@ bool TrimeshFace::intersectLocal(ray &r, isect &i) const {
       i.setMaterial(material_copy);
 
     }
+    //mix normals
     if(!this->parent->normals.empty()){
       glm::dvec3 bay_coords = bay_coordinate(A, B, C, position);
       //norm mixing
