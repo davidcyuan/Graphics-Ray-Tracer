@@ -55,7 +55,7 @@ glm::dvec3 Material::shade(Scene *scene, const ray &r, const isect &i) const {
       isect temp_i = i;
       //if inside, intersection should never be empty
       if(shadow_sects.empty()){
-       // std::cout<<"Error: shadow_sects empty while inside object"<<std::endl;
+        //std::cout<<"Error: shadow_sects empty while inside object"<<std::endl;
         //std::cout<<isect_point<<std::endl;
         isect temp_i2 = i;
         shadow_sects.emplace_back(temp_i);
@@ -121,7 +121,26 @@ glm::dvec3 TextureMap::getMappedValue(const glm::dvec2 &coord) const {
   // and use these to perform bilinear interpolation
   // of the values.
 
-  return glm::dvec3(1, 1, 1);
+  double x = coord[0] * (width - 1);
+	double y = coord[1] * (height - 1);
+
+	int x1 = (int)x;
+	int x2 = x1 + 1;
+	int y1 = (int)y;
+	int y2 = y1 + 1;
+
+  glm::dvec3 x1y1 = getPixelAt(x1, y1);
+  glm::dvec3 x1y2 = getPixelAt(x1, y2);
+  glm::dvec3 x2y1 = getPixelAt(x2, y1);
+  glm::dvec3 x2y2 = getPixelAt(x2, y2);
+
+  glm::dvec3 color = x1y1 * (double(x2) - x) * (double(y2) - y) +
+										 x1y2 * (x - double(x1)) * (double(y2) - y) +
+										 x2y1 * (double(x2) - x) * (y - double(y1)) +
+										 x2y2 * (x - double(x1)) * (y - double(y1));
+
+
+  return color;
 }
 
 glm::dvec3 TextureMap::getPixelAt(int x, int y) const {
@@ -130,7 +149,38 @@ glm::dvec3 TextureMap::getPixelAt(int x, int y) const {
   // In order to add texture mapping support to the
   // raytracer, you need to implement this function.
 
-  return glm::dvec3(1, 1, 1);
+  //what is relationship between x and y and its position in data
+  //what if x and y are out of bounds
+    if(data.size() < 3 * width * height){
+        return glm::dvec3(0,0,0);
+    }
+
+   if( x > width - 1){
+     x = width - 1;
+   } 
+
+   if (y > height - 1){
+     y = height - 1;
+   }
+
+   if(x < 0){
+    x = 0;
+   }
+
+   if(y < 0){
+    y = 0;
+   }
+
+    int place = (y * width + x) * 3;
+    //std::cout<<"point: "<<x << " , "<<y;
+    if(data.size() <= place + 2){
+      std::cout<<"data out of bounds";
+    }
+    double r = data[place] / 255.0;
+    double g = data[place + 1] / 255.0;
+    double b = data[place + 2] / 255.0;
+    //std::cout<<" color: "<<glm::dvec3(r,g,b)<<"\n";
+    return glm::dvec3(r,g,b);
 }
 
 glm::dvec3 MaterialParameter::value(const isect &is) const {
