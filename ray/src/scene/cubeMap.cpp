@@ -3,10 +3,14 @@
 #include "../ui/TraceUI.h"
 #include "ray.h"
 extern TraceUI *traceUI;
+#include <iostream>
+
+using namespace std;
 
 glm::dvec3 CubeMap::getColor(ray r) const {
   // YOUR CODE HERE
   // FIXME: Implement Cube Map here 
+  std::cout<<"cubemap"<<"\n";
   glm::dvec3 ray_dir = r.getDirection();
   double x = ray_dir[0];
   double y = ray_dir[1];
@@ -45,12 +49,22 @@ glm::dvec3 CubeMap::getColor(ray r) const {
     }
   }
   //scales and moves u and v so that it falls on scale [0,1]
-    u = 0.5 * (u / max + 1.0);
-	  v = 0.5 * (v / max + 1.0);
+    u = (u / max)/2 + .5;
+	  v = (v / max)/2 + .5;
+    if(u < 0){
+      std::cout<<"u our of bounds, less than 0" << "\n";
+    } else if(u > 1){
+      std::cout<<"u our of bounds, greater than 0" << "\n";
+    }
+
+     if(v < 0){
+      std::cout<<"v our of bounds, less than 0" << "\n";
+    } else if(v > 1){
+      std::cout<<"v our of bounds, greater than 0" << "\n";
+    }
     glm::dvec2 coord = glm::dvec2(u, v);
 	  return tMap[face] -> getMappedValue(coord);
-
-  return glm::dvec3();
+    //return glm::dvec3(0,0,0);
 }
 
 CubeMap::CubeMap() {}
