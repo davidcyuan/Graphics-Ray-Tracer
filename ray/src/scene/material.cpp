@@ -77,6 +77,7 @@ glm::dvec3 Material::shade(Scene *scene, const ray &r, const isect &i) const {
 
 
     //diffusal
+    //check texture?
     glm::dvec3 diffusal = kd(i) * glm::max(glm::dot(norm, dir), 0.0) * atten_light * dist_atten;
     color+=diffusal;
     if(debugMode){
@@ -120,7 +121,7 @@ glm::dvec3 TextureMap::getMappedValue(const glm::dvec2 &coord) const {
   // [0, 1] x [0, 1] in 2-space to bitmap coordinates,
   // and use these to perform bilinear interpolation
   // of the values.
-std::cout<<"get mapped value"<<"\n";
+//std::cout<<"get mapped value"<<"\n";
   double x = coord[0] * (width - 1);
 	double y = coord[1] * (height - 1);
 
@@ -139,7 +140,7 @@ std::cout<<"get mapped value"<<"\n";
 										 x2y1 * (double(x2) - x) * (y - double(y1)) +
 										 x2y2 * (x - double(x1)) * (y - double(y1));
 
-std::cout<<"returned mapped value"<<"\n";
+//std::cout<<"returned mapped value"<<"\n";
   return color;
 }
 
@@ -151,7 +152,7 @@ glm::dvec3 TextureMap::getPixelAt(int x, int y) const {
 
   //what is relationship between x and y and its position in data
   //what if x and y are out of bounds
-  std::cout<<"getPixelAt"<<"\n";
+  //std::cout<<"getPixelAt"<<"\n";
     if(data.size() < 3 * width * height){
         return glm::dvec3(0,0,0);
     }
