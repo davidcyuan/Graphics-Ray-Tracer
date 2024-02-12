@@ -121,9 +121,19 @@ glm::dvec3 TextureMap::getMappedValue(const glm::dvec2 &coord) const {
   // [0, 1] x [0, 1] in 2-space to bitmap coordinates,
   // and use these to perform bilinear interpolation
   // of the values.
-//std::cout<<"get mapped value"<<"\n";
-  double x = coord[0] * (width - 1);
-	double y = coord[1] * (height - 1);
+
+  //convert uv to xy, not rounded
+  //uv should never be >=1
+  double ucoord = coord[0];
+  if(ucoord >= 1){
+    ucoord = ucoord - RAY_EPSILON;
+  }
+  double vcoord = coord[1];
+  if(vcoord >= 1){
+    vcoord = vcoord - RAY_EPSILON;
+  }
+  double x = ucoord * (width - 1);
+	double y = vcoord * (height - 1);
 
 	int x1 = (int)x;
 	int x2 = x1 + 1;
@@ -135,9 +145,14 @@ glm::dvec3 TextureMap::getMappedValue(const glm::dvec2 &coord) const {
   glm::dvec3 x2y1 = getPixelAt(x2, y1);
   glm::dvec3 x2y2 = getPixelAt(x2, y2);
 
+  //check this?
+  // glm::dvec3 color = x1y1 * (double(x2) - x) * (double(y2) - y) +
+	// 									 x1y2 * (x - double(x1)) * (double(y2) - y) +
+	// 									 x2y1 * (double(x2) - x) * (y - double(y1)) +
+	// 									 x2y2 * (x - double(x1)) * (y - double(y1));
   glm::dvec3 color = x1y1 * (double(x2) - x) * (double(y2) - y) +
-										 x1y2 * (x - double(x1)) * (double(y2) - y) +
-										 x2y1 * (double(x2) - x) * (y - double(y1)) +
+										 x1y2 * (double(x2) - x) * (y - double(y1)) +
+										 x2y1 * (x - double(x1)) * (double(y2) - y) +
 										 x2y2 * (x - double(x1)) * (y - double(y1));
 
 //std::cout<<"returned mapped value"<<"\n";
