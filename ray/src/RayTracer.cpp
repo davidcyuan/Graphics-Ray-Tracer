@@ -103,6 +103,9 @@ glm::dvec3 RayTracer::tracePixel(int i, int j) {
 			double ss_y = y + ss_offset_y + ss_j*ss_y_unit;
 			//std::cout<<ss_x<<", "<<ss_y<<"  ";
 			col += trace(ss_x, ss_y);
+      if (glm::length(col) < glm::length(thresh)) {
+        return col;
+      }
 		}
 		//std::cout<<"\n";
 	}
@@ -143,6 +146,10 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
 
     const Material &m = i.getMaterial();
     colorC = m.shade(scene.get(), r, i);
+    if (glm::length(colorC) < glm::length(thresh)) {
+      return colorC; 
+    }
+
     if(depth > 0){
         
       glm::dvec3 ray_pos = r.at(i.getT());
