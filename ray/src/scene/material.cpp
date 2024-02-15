@@ -15,7 +15,7 @@ Material::~Material() {}
 
 // Apply the phong model to this point on the surface of the object, returning
 // the color of that point.
-glm::dvec3 Material::shade(Scene *scene, const ray &r, const isect &i) const {
+glm::dvec3 Material::shade(Scene *scene, const ray &r, const isect &i, bool cel) const {
   //get initial position and color
   glm::dvec3 isect_point = r.at(i.getT()-RAY_EPSILON*2);  
   glm::dvec3 pos = r.at(i.getT());
@@ -39,62 +39,135 @@ glm::dvec3 Material::shade(Scene *scene, const ray &r, const isect &i) const {
 
   //loop through all lights
   for(const auto& pLight : scene->getAllLights()){
-    glm::dvec3 light_direction = pLight->getDirection(isect_point);
+    if(!cel){
+        glm::dvec3 light_direction = pLight->getDirection(isect_point);
 
-    //create shadow ray
-    //isect shadow_sect;
-    ray shadow_ray(glm::dvec3(0, 0, 0), glm::dvec3(0, 0, 0), glm::dvec3(1, 1, 1),
-        ray::SHADOW);
-    shadow_ray.setPosition(isect_point);
-    shadow_ray.setDirection(glm::normalize(light_direction));
-    //get all shadow ray collisions, including last opaque object (if it exists)
-    //this is with a backed up point
-    std::vector<isect> shadow_sects = scene->intersect_list(shadow_ray, (Light *)pLight);
-    //if inside object, then we need to add current intersection in
-    if(is_inside){
-      isect temp_i = i;
-      //if inside, intersection should never be empty
-      if(shadow_sects.empty()){
-        //std::cout<<"Error: shadow_sects empty while inside object"<<std::endl;
-        //std::cout<<isect_point<<std::endl;
-        isect temp_i2 = i;
-        shadow_sects.emplace_back(temp_i);
-      }
-      shadow_sects.insert(shadow_sects.begin(), temp_i);
+        //create shadow ray
+        //isect shadow_sect;
+        ray shadow_ray(glm::dvec3(0, 0, 0), glm::dvec3(0, 0, 0), glm::dvec3(1, 1, 1),
+            ray::SHADOW);
+        shadow_ray.setPosition(isect_point);
+        shadow_ray.setDirection(glm::normalize(light_direction));
+        //get all shadow ray collisions, including last opaque object (if it exists)
+        //this is with a backed up point
+        std::vector<isect> shadow_sects = scene->intersect_list(shadow_ray, (Light *)pLight);
+        //if inside object, then we need to add current intersection in
+        if(is_inside){
+          isect temp_i = i;
+          //if inside, intersection should never be empty
+          if(shadow_sects.empty()){
+            //std::cout<<"Error: shadow_sects empty while inside object"<<std::endl;
+            //std::cout<<isect_point<<std::endl;
+            isect temp_i2 = i;
+            shadow_sects.emplace_back(temp_i);
+          }
+          shadow_sects.insert(shadow_sects.begin(), temp_i);
+        }
+        if(debugMode){
+          //std::cout<<"shadow_sects.size(): "<<shadow_sects.size()<<std::endl;
+        }
+        //no intersections, path to light clear
+        //ignore check
+        glm::dvec3 dir = pLight->getDirection(pos);
+        glm::dvec3 norm = i.getN(); 
+
+        //distance attenuation
+        double dist_atten = pLight->distanceAttenuation(pos);
+        //shadow attenuation
+        glm::dvec3 atten_light = pLight->shadowAttenuation(shadow_sects);
+
+
+        //diffusal
+        //check texture?
+        glm::dvec3 diffusal = kd(i) * glm::max(glm::dot(norm, dir), 0.0) * atten_light * dist_atten;
+        color+=diffusal;
+        if(debugMode){
+          //std::cout<<"kd: "<<kd(i)<<"|| angle coeff: "<<glm::max(glm::dot(norm, dir), 0.0)<<"|| light color: "<<
+          //  pLight->getColor()<<"|| dist_atten: "<<dist_atten<<std::endl;
+        }
+
+        //specular
+        glm::dvec3 viewDir = r.getDirection();
+        glm::dvec3 reflectedDir = glm::reflect(dir, i.getN());
+        double specAngle = max(glm::dot(viewDir, reflectedDir), 0.0);
+        glm::dvec3 spec = ks(i) * pow(specAngle, shininess(i)) * atten_light * dist_atten;
+        color += spec;
+        if(debugMode){
+          //std::cout<<"ks: "<<ks(i)<<"|| spec coeff: "<<pow(specAngle, shininess(i))<<std::endl;
+        }
+
+    } else{
+          glm::dvec3 light_direction = pLight->getDirection(isect_point);
+
+          //create shadow ray
+          //isect shadow_sect;
+          ray shadow_ray(glm::dvec3(0, 0, 0), glm::dvec3(0, 0, 0), glm::dvec3(1, 1, 1),
+              ray::SHADOW);
+          shadow_ray.setPosition(isect_point);
+          shadow_ray.setDirection(glm::normalize(light_direction));
+          //get all shadow ray collisions, including last opaque object (if it exists)
+          //this is with a backed up point
+          std::vector<isect> shadow_sects = scene->intersect_list(shadow_ray, (Light *)pLight);
+          //if inside object, then we need to add current intersection in
+          if(is_inside){
+            isect temp_i = i;
+            //if inside, intersection should never be empty
+            if(shadow_sects.empty()){
+              //std::cout<<"Error: shadow_sects empty while inside object"<<std::endl;
+              //std::cout<<isect_point<<std::endl;
+              isect temp_i2 = i;
+              shadow_sects.emplace_back(temp_i);
+            }
+            shadow_sects.insert(shadow_sects.begin(), temp_i);
+          }
+          if(debugMode){
+            //std::cout<<"shadow_sects.size(): "<<shadow_sects.size()<<std::endl;
+          }
+          //no intersections, path to light clear
+          //ignore check
+          glm::dvec3 dir = pLight->getDirection(pos);
+          glm::dvec3 norm = i.getN(); 
+
+          //distance attenuation
+          double dist_atten = pLight->distanceAttenuation(pos);
+          //shadow attenuation
+          glm::dvec3 atten_light = pLight->shadowAttenuation(shadow_sects);
+
+
+          //diffusal
+          //check texture?
+           glm::dvec3 diffusal;
+          if (glm::max(glm::dot(norm, dir), 0.0) > 0.95) {
+            diffusal = kd(i) * 1.5 * atten_light * dist_atten;
+          } else if (glm::max(glm::dot(norm, dir), 0.0) > 0.75) {
+            diffusal = kd(i) * atten_light * dist_atten;
+          } else if (glm::max(glm::dot(norm, dir), 0.0) > 0.5) {
+            diffusal = kd(i) * 0.6 * atten_light * dist_atten;
+          } else if (glm::max(glm::dot(norm, dir), 0.0) > 0.25) {
+            diffusal = kd(i) * 0.3 * atten_light * dist_atten;
+          } else {
+            diffusal = kd(i) * 0.1 * atten_light * dist_atten;
+          }
+          color+=diffusal;
+
+          //specular
+          glm::dvec3 viewDir = r.getDirection();
+          glm::dvec3 reflectedDir = glm::reflect(dir, i.getN());
+          double specAngle = max(glm::dot(viewDir, reflectedDir), 0.0);
+          glm::dvec3 spec;
+          if(pow(specAngle, shininess(i) > .5)){
+            spec = ks(i) * pow(specAngle, shininess(i)) * atten_light * dist_atten;
+          } else{
+            spec = glm::dvec3(0);
+          }
+          color += spec;
+
+          if (glm::dot(glm::dvec3(-1) * viewDir, norm) < .3) {
+            std::cout<<glm::dot(viewDir, norm)<<"\n";
+              color = glm::dvec3(0); // Set color to black for silhouette edge
+          }
+
     }
-    if(debugMode){
-      //std::cout<<"shadow_sects.size(): "<<shadow_sects.size()<<std::endl;
-    }
-    //no intersections, path to light clear
-    //ignore check
-    glm::dvec3 dir = pLight->getDirection(pos);
-    glm::dvec3 norm = i.getN(); 
-
-    //distance attenuation
-    double dist_atten = pLight->distanceAttenuation(pos);
-    //shadow attenuation
-    glm::dvec3 atten_light = pLight->shadowAttenuation(shadow_sects);
-
-
-    //diffusal
-    //check texture?
-    glm::dvec3 diffusal = kd(i) * glm::max(glm::dot(norm, dir), 0.0) * atten_light * dist_atten;
-    color+=diffusal;
-    if(debugMode){
-      //std::cout<<"kd: "<<kd(i)<<"|| angle coeff: "<<glm::max(glm::dot(norm, dir), 0.0)<<"|| light color: "<<
-      //  pLight->getColor()<<"|| dist_atten: "<<dist_atten<<std::endl;
-    }
-
-    //specular
-    glm::dvec3 viewDir = r.getDirection();
-    glm::dvec3 reflectedDir = glm::reflect(dir, i.getN());
-    double specAngle = max(glm::dot(viewDir, reflectedDir), 0.0);
-    glm::dvec3 spec = ks(i) * pow(specAngle, shininess(i)) * atten_light * dist_atten;
-    color += spec;
-    if(debugMode){
-      //std::cout<<"ks: "<<ks(i)<<"|| spec coeff: "<<pow(specAngle, shininess(i))<<std::endl;
-    }
-
   }
 return color;
 }

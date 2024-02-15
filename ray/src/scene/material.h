@@ -157,7 +157,7 @@ public:
     setBools();
   }
 
-  virtual glm::dvec3 shade(Scene *scene, const ray &r, const isect &i) const;
+  virtual glm::dvec3 shade(Scene *scene, const ray &r, const isect &i, bool cel) const;
 
   Material &operator+=(const Material &m) {
     _ke += m._ke;
