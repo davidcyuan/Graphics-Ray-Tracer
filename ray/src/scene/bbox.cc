@@ -96,3 +96,31 @@ void BoundingBox::merge(const BoundingBox &bBox) {
   dirty = true;
   bEmpty = false;
 }
+
+void BVH::add(const BoundingBox *atom_box){
+  this->atom_boxes.push_back(atom_box);
+  this->bvh_box.merge(*atom_box);
+}
+
+void BVH::generate_children(){
+  //no children
+  if(this->atom_boxes.size()<2){
+    return;
+  }
+  this->has_children = true;
+  glm::dvec3 bvh_box_dimensions = this->bvh_box.getMax() - this->bvh_box.getMin();
+  double x_dist = bvh_box_dimensions[0];
+  double y_dist = bvh_box_dimensions[1];
+  double z_dist = bvh_box_dimensions[2];
+  
+  //split dimension
+  if(x_dist > y_dist && x_dist > z_dist){
+    this->atom_boxes.sort(BVH::compare_boxes_x);
+  }
+  else if(y_dist > x_dist && y_dist > z_dist){
+    this->atom_boxes.sort(BVH::compare_boxes_y);
+  }
+  else{
+    this->atom_boxes.sort(BVH::compare_boxes_z);
+  }
+}

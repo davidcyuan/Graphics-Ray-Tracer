@@ -1,7 +1,10 @@
 #pragma once
 
 #include <glm/vec3.hpp>
+#include <list>
 class ray;
+class Geometry;
+class TrimeshFace;
 
 class BoundingBox {
   bool bEmpty;
@@ -10,6 +13,10 @@ class BoundingBox {
   glm::dvec3 bmax;
   double bArea = 0.0;
   double bVolume = 0.0;
+  bool parent_is_geometry = false;
+  bool parent_is_TrimeshFace = false;
+  Geometry *geometry_parent;
+  TrimeshFace *TrimeshFace_parent;
 
 public:
   BoundingBox();
@@ -45,6 +52,24 @@ public:
     }
   }
 
+  void set_parent(Geometry* parent){
+    this->parent_is_geometry = true;
+    this->geometry_parent = parent;
+  }
+
+  void set_parent(TrimeshFace* parent){
+    this->parent_is_TrimeshFace = true;
+    this->TrimeshFace_parent = parent;
+  }
+
+  Geometry* get_geometry_parent()const{
+    return this->geometry_parent;
+  }
+
+  TrimeshFace* get_TrimeshFace_parent()const{
+    return this->TrimeshFace_parent;
+  }
+
   // Does this bounding box intersect the target?
   bool intersects(const BoundingBox &target) const;
 
@@ -59,4 +84,33 @@ public:
   double area();
   double volume();
   void merge(const BoundingBox &bBox);
+};
+
+class BVH {
+  public:
+    void add(const BoundingBox *atom_box);
+    void print_objects_length(){
+      // std::cout<<"testing: "<<this->objects.size()<<std::endl;
+    }
+    int bvh_length(){
+      return atom_boxes.size();
+    }
+    std::list<const BoundingBox *> get_atom_boxes() const{
+      return this->atom_boxes;
+    }
+    void generate_children();
+  private:
+    BoundingBox bvh_box;
+    std::list<const BoundingBox *> atom_boxes;
+    bool has_children = false;
+
+    static bool compare_boxes_x(const BoundingBox *box_one, const BoundingBox *box_two){
+      return box_one->getMin()[0] < box_two->getMin()[0];
+    }
+    static bool compare_boxes_y(const BoundingBox *box_one, const BoundingBox *box_two){
+      return box_one->getMin()[1] < box_two->getMin()[1];
+    }
+    static bool compare_boxes_z(const BoundingBox *box_one, const BoundingBox *box_two){
+      return box_one->getMin()[2] < box_two->getMin()[2];
+    }
 };

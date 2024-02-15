@@ -9,10 +9,10 @@
 #include "../scene/material.h"
 #include "../scene/ray.h"
 #include "../scene/scene.h"
+#include "../scene/bbox.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/vec3.hpp>
-
 class TrimeshFace;
 
 class Trimesh : public SceneObject {
@@ -29,6 +29,7 @@ class Trimesh : public SceneObject {
   VertColors vertColors;
   UVCoords uvCoords;
   BoundingBox localBounds;
+  BVH bvh;
 
 public:
   Trimesh(Scene *scene, Material *mat, MatrixTransform transform)
@@ -58,6 +59,7 @@ public:
   bool hasBoundingBoxCapability() const { return true; }
 
   BoundingBox ComputeLocalBoundingBox() {
+    this->bvh.generate_children();
     BoundingBox localbounds;
     if (vertices.size() == 0)
       return localbounds;
@@ -123,6 +125,7 @@ public:
       dist = glm::dot(normal, a_coords);
     }
     localbounds = ComputeLocalBoundingBox();
+    localbounds.set_parent(this);
     bounds = localbounds;
   }
 

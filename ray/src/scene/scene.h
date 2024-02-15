@@ -15,6 +15,7 @@
 #include <mutex>
 #include <string>
 #include <vector>
+#include <list>
 
 #include "bbox.h"
 #include "camera.h"
@@ -27,6 +28,8 @@
 #include <glm/matrix.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+
+#include <iostream>
 
 using std::unique_ptr;
 
@@ -137,6 +140,7 @@ public:
 protected:
   BoundingBox bounds;
   MatrixTransform transform;
+  //BVH bvh;
 };
 
 // A SceneObject is a real actual thing that we want to model in the
@@ -172,6 +176,7 @@ public:
   void add(Light *light);
 
   bool intersect(ray &r, isect &i) const;
+  bool test_intersect(ray &r, isect &i) const;
   std::vector<isect> intersect_list(ray &r, Light * pLight) const;
 
   auto beginLights() const { return lights.begin(); }
@@ -200,6 +205,10 @@ public:
 
   const BoundingBox &bounds() const { return sceneBounds; }
 
+  void print_BVH_length(){
+    this->bvh.print_objects_length();
+  }
+
 
 private:
   /* Do not try to access these members directly. If you need to iterate
@@ -227,8 +236,9 @@ private:
   // must fall within this bounding box. Objects that don't have
   // hasBoundingBoxCapability() are exempt from this requirement.
   BoundingBox sceneBounds;
-
-  KdTree<Geometry> *kdtree;
+  //Array of bounding boxes.
+  BVH bvh;
+  
 
   mutable std::mutex intersectionCacheMutex;
 
@@ -248,5 +258,7 @@ public:
 
   mutable std::vector<std::pair<ray *, isect *>> intersectCache;
 };
+
+
 
 #endif // __SCENE_H__

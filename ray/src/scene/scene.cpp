@@ -91,6 +91,7 @@ void Geometry::ComputeBoundingBox() {
 
   bounds.setMax(glm::dvec3(newMax));
   bounds.setMin(glm::dvec3(newMin));
+  bounds.set_parent(this);
 }
 
 Scene::Scene() { ambientIntensity = glm::dvec3(0, 0, 0); }
@@ -102,10 +103,13 @@ Scene::~Scene() {
     delete light;
 }
 
+
+//add bounding boxes here
 void Scene::add(Geometry *obj) {
   obj->ComputeBoundingBox();
   sceneBounds.merge(obj->getBoundingBox());
   objects.emplace_back(obj);
+  this->bvh.add(&obj->getBoundingBox());
 }
 
 void Scene::add(Light *light) { lights.emplace_back(light); }
@@ -113,25 +117,52 @@ void Scene::add(Light *light) { lights.emplace_back(light); }
 
 // Get any intersection with an object.  Return information about the
 // intersection through the reference parameter.
+// bool Scene::intersect(ray &r, isect &i) const {
+//   bool have_one = false;
+//   for (const auto &obj : objects) {
+//     isect cur;
+//     if (obj->intersect(r, cur)) {
+//       if (!have_one || (cur.getT() < i.getT())) {
+//         i = cur;
+//         have_one = true;
+//       }
+//     }
+//   }
+//   if (!have_one)
+//     i.setT(1000.0);
+//   // if debugging,
+//   if (TraceUI::m_debug) {
+//     addToIntersectCache(std::make_pair(new ray(r), new isect(i)));
+//   }
+//   return have_one;
+// }
+
+//still need to check non-box objects
 bool Scene::intersect(ray &r, isect &i) const {
   bool have_one = false;
-  for (const auto &obj : objects) {
-    isect cur;
-    if (obj->intersect(r, cur)) {
-      if (!have_one || (cur.getT() < i.getT())) {
-        i = cur;
-        have_one = true;
+  for(const BoundingBox *atom_box : this->bvh.get_atom_boxes()){
+    double tmin = 0.0;
+    double tmax = 0.0;
+    if(atom_box->intersect(r, tmin, tmax)){
+      Geometry *obj = atom_box->get_geometry_parent();
+      isect cur;
+      if(obj->intersect(r, cur)){
+        if(!have_one || cur.getT()<i.getT()){
+          i = cur;
+          have_one = true;
+        }
       }
     }
   }
-  if (!have_one)
+  if(!have_one){
     i.setT(1000.0);
-  // if debugging,
+  }
   if (TraceUI::m_debug) {
     addToIntersectCache(std::make_pair(new ray(r), new isect(i)));
   }
   return have_one;
 }
+
 //r is with backed by epsilon point
 std::vector<isect> Scene::intersect_list(ray &r, Light * pLight) const{
   //array of isect objects

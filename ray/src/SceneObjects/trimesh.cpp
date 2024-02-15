@@ -33,8 +33,11 @@ bool Trimesh::addFace(int a, int b, int c) {
     return false;
 
   TrimeshFace *newFace = new TrimeshFace(this, a, b, c);
-  if (!newFace->degen)
+  if (!newFace->degen){
     faces.push_back(newFace);
+    this->bvh.add(&newFace->getBoundingBox());
+    //std::cout<<"trimesh bvh length: "<<this->bvh.bvh_length()<<std::endl;
+  }
   else
     delete newFace;
 
@@ -56,19 +59,41 @@ const char *Trimesh::doubleCheck() {
   return 0;
 }
 
+// bool Trimesh::intersectLocal(ray &r, isect &i) const {
+//   bool have_one = false;
+//   for (auto face : faces) {
+//     isect cur;
+//     if (face->intersectLocal(r, cur)) {
+//       if (!have_one || (cur.getT() < i.getT())) {
+//         i = cur;
+//         have_one = true;
+//       }
+//     }
+//   }
+//   if (!have_one)
+//     i.setT(1000.0);
+//   return have_one;
+// }
+
 bool Trimesh::intersectLocal(ray &r, isect &i) const {
   bool have_one = false;
-  for (auto face : faces) {
-    isect cur;
-    if (face->intersectLocal(r, cur)) {
-      if (!have_one || (cur.getT() < i.getT())) {
-        i = cur;
-        have_one = true;
+  for(const BoundingBox *face_box : this->bvh.get_atom_boxes()){
+    double tmin = 0.0;
+    double tmax = 0.0;
+    if(face_box->intersect(r, tmin, tmax)){
+      isect cur;
+      TrimeshFace *face = face_box->get_TrimeshFace_parent();
+      if(face->intersectLocal(r, cur)){
+        if(!have_one||(cur.getT()<i.getT())){
+          i = cur;
+          have_one = true;
+        }
       }
     }
   }
-  if (!have_one)
+  if(!have_one){
     i.setT(1000.0);
+  }
   return have_one;
 }
 

@@ -146,9 +146,6 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
 
     const Material &m = i.getMaterial();
     colorC = m.shade(scene.get(), r, i);
-    if (glm::length(colorC) < glm::length(thresh)) {
-      return colorC; 
-    }
 
     if(depth > 0){
         
@@ -328,6 +325,8 @@ bool RayTracer::loadScene(const char *fn) {
       return false;
     }
   }
+
+  //scene->print_BVH_length();
 
   if (!sceneLoaded())
     return false;
