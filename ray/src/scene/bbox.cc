@@ -1,5 +1,7 @@
 #include "bbox.h"
 #include "ray.h"
+#include "scene.h"
+#include "../SceneObjects/trimesh.h"
 
 BoundingBox::BoundingBox() : bEmpty(true) {}
 
@@ -102,12 +104,15 @@ void BVH::add(const BoundingBox *atom_box){
   this->bvh_box.merge(*atom_box);
 }
 
-void BVH::generate_children(){
+void BVH::generate_children(int depth){
   //no children
-  if(this->atom_boxes.size()<2){
+  if(this->atom_boxes.size()<2 || depth <= 0){
     return;
   }
   this->has_children = true;
+  BVH *lefty = new BVH();
+  BVH *righty = new BVH();
+
   glm::dvec3 bvh_box_dimensions = this->bvh_box.getMax() - this->bvh_box.getMin();
   double x_dist = bvh_box_dimensions[0];
   double y_dist = bvh_box_dimensions[1];
@@ -123,4 +128,91 @@ void BVH::generate_children(){
   else{
     this->atom_boxes.sort(BVH::compare_boxes_z);
   }
+
+  //split
+  int atom_boxes_size = this->atom_boxes.size();
+  for(int x = 0; x<atom_boxes_size; x++){
+    const BoundingBox *popped_box = this->atom_boxes.front();
+    this->atom_boxes.pop_front();
+    if(x < atom_boxes_size/2){
+      lefty->add(popped_box);
+    }
+    else{
+      righty->add(popped_box);
+    }
+  }
+
+  //assign
+  this->left_child = lefty;
+  this->right_child = righty;
+
+  //recurse
+  //std::cout<<"got to recurse"<<std::endl;
+  this->left_child->generate_children(depth - 1);
+  this->right_child->generate_children(depth -1);
+}
+
+bool BVH::intersect(ray &r, isect &i) const{
+  //std::cout<<"starting intersect"<<std::endl;
+  bool have_one = false;
+
+  double tmin = 0.0;
+  double tmax = 0.0;
+  if(this->bvh_box.intersect(r, tmin, tmax)){
+    if(this->has_children){
+      isect left_isect;
+      bool left_have_one = false;
+      isect right_isect;
+      bool right_have_one = false;
+
+      left_have_one = this->left_child->intersect(r, left_isect);
+      right_have_one = this->right_child->intersect(r, right_isect);
+      if(left_have_one){
+        if(!have_one||left_isect.getT()<i.getT()){
+          i = left_isect;
+          have_one = true;
+        }
+      }
+      if(right_have_one){
+        if(!have_one||right_isect.getT()<i.getT()){
+          i = right_isect;
+          have_one = true;
+        }
+      }
+    }
+    else{
+      //std::cout<<"no children"<<std::endl;
+      for(const BoundingBox *atom_box : this->get_atom_boxes()){
+        double tmin = 0.0;
+        double tmax = 0.0;
+        if(atom_box->intersect(r, tmin, tmax)){
+          isect cur;
+          if(atom_box->is_geometry_parent()){
+            Geometry *obj = atom_box->get_geometry_parent();
+            isect geometry_isect;
+            if(obj->intersect(r, geometry_isect)){
+              if(!have_one || geometry_isect.getT()<i.getT()){
+                i = geometry_isect;
+                have_one = true;
+              }
+            }
+          }
+          else if(atom_box->is_TrimeshFace_parent()){
+            TrimeshFace *face = atom_box->get_TrimeshFace_parent();
+            isect trimeshFace_isect;
+            if(face->intersectLocal(r, trimeshFace_isect)){
+              if(!have_one||(trimeshFace_isect.getT()<i.getT())){
+                i = trimeshFace_isect;
+                have_one = true;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  if(!have_one){
+    i.setT(1000.0);
+  }
+  return have_one;
 }

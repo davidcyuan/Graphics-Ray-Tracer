@@ -107,9 +107,11 @@ Scene::~Scene() {
 //add bounding boxes here
 void Scene::add(Geometry *obj) {
   obj->ComputeBoundingBox();
+  obj->generate_bvh();
   sceneBounds.merge(obj->getBoundingBox());
   objects.emplace_back(obj);
   this->bvh.add(&obj->getBoundingBox());
+
 }
 
 void Scene::add(Light *light) { lights.emplace_back(light); }

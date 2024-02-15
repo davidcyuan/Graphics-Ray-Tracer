@@ -59,7 +59,6 @@ public:
   bool hasBoundingBoxCapability() const { return true; }
 
   BoundingBox ComputeLocalBoundingBox() {
-    this->bvh.generate_children();
     BoundingBox localbounds;
     if (vertices.size() == 0)
       return localbounds;
@@ -72,6 +71,12 @@ public:
     }
     localBounds = localbounds;
     return localbounds;
+  }
+
+  void generate_bvh(){
+    std::cout<<"generating"<<std::endl;
+    int bvh_depth = 30;
+    this->bvh.generate_children(bvh_depth);
   }
 
 protected:

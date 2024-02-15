@@ -5,6 +5,7 @@
 class ray;
 class Geometry;
 class TrimeshFace;
+class isect;
 
 class BoundingBox {
   bool bEmpty;
@@ -62,10 +63,16 @@ public:
     this->TrimeshFace_parent = parent;
   }
 
+  bool is_geometry_parent()const{
+    return this->parent_is_geometry;
+  }
   Geometry* get_geometry_parent()const{
     return this->geometry_parent;
   }
 
+  bool is_TrimeshFace_parent()const{
+    return this->parent_is_TrimeshFace;
+  }
   TrimeshFace* get_TrimeshFace_parent()const{
     return this->TrimeshFace_parent;
   }
@@ -98,11 +105,14 @@ class BVH {
     std::list<const BoundingBox *> get_atom_boxes() const{
       return this->atom_boxes;
     }
-    void generate_children();
+    void generate_children(int depth);
+    bool intersect(ray &r, isect &i) const;
   private:
     BoundingBox bvh_box;
     std::list<const BoundingBox *> atom_boxes;
     bool has_children = false;
+    BVH *left_child;
+    BVH *right_child;
 
     static bool compare_boxes_x(const BoundingBox *box_one, const BoundingBox *box_two){
       return box_one->getMin()[0] < box_two->getMin()[0];

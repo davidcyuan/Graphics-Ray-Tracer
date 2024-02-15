@@ -30,7 +30,7 @@ extern TraceUI *traceUI;
 // set in the "trace single ray" mode in TraceGLWindow, for example.
 bool debugMode = false;
 
-bool cel = true;
+bool cel = false;
 // Trace a top-level ray through pixel(i,j), i.e. normalized window coordinates
 // (x,y), through the projection plane, and out into the scene. All we do is
 // enter the main ray-tracing method, getting things started by plugging in an
@@ -146,7 +146,7 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
     // contributions from reflected and refracted rays.
 
     const Material &m = i.getMaterial();
-    colorC = m.shade(scene.get(), r, i);
+    colorC = m.shade(scene.get(), r, i, cel);;
 
     if(depth > 0){
         

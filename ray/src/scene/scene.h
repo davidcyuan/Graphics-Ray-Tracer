@@ -121,6 +121,10 @@ public:
   // this should be overridden if hasBoundingBoxCapability() is true.
   virtual BoundingBox ComputeLocalBoundingBox() { return BoundingBox(); }
 
+  virtual void generate_bvh(){
+    //std::cout<<"fake generating"<<std::endl;
+  }
+
   void setTransform(const MatrixTransform &transform) {
     this->transform = transform;
   };
