@@ -30,6 +30,7 @@ extern TraceUI *traceUI;
 // set in the "trace single ray" mode in TraceGLWindow, for example.
 bool debugMode = false;
 
+bool cel = true;
 // Trace a top-level ray through pixel(i,j), i.e. normalized window coordinates
 // (x,y), through the projection plane, and out into the scene. All we do is
 // enter the main ray-tracing method, getting things started by plugging in an
@@ -50,7 +51,7 @@ glm::dvec3 RayTracer::trace(double x, double y) {
   double dummy;
   isect isect_dummy;
   glm::dvec3 ret =
-      traceRay(r, glm::dvec3(1.0, 1.0, 1.0), traceUI->getDepth(), dummy, isect_dummy);
+      traceRay(r, glm::dvec3(1.0, 1.0, 1.0), traceUI->getDepth(), dummy, isect_dummy, glm::dvec3(1, 1, 1));
   ret = glm::clamp(ret, 0.0, 1.0);
   return ret;
 }
@@ -103,9 +104,9 @@ glm::dvec3 RayTracer::tracePixel(int i, int j) {
 			double ss_y = y + ss_offset_y + ss_j*ss_y_unit;
 			//std::cout<<ss_x<<", "<<ss_y<<"  ";
 			col += trace(ss_x, ss_y);
-      if (glm::length(col) < glm::length(thresh)) {
+      /*if (glm::length(col) < glm::length(thresh)) {
         return col;
-      }
+      }*/
 		}
 		//std::cout<<"\n";
 	}
@@ -125,7 +126,7 @@ glm::dvec3 RayTracer::tracePixel(int i, int j) {
 //? Actual ray trace
 //dummy intersect object that gets filled with previous ray intersection in order to calculate distance in recursive traceRay calls
 glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
-                               double &t, isect &intersect) {
+                               double &t, isect &intersect, glm::dvec3 kr) {
   isect i;
   glm::dvec3 colorC;
 #if VERBOSE
@@ -145,10 +146,10 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
     // contributions from reflected and refracted rays.
 
     const Material &m = i.getMaterial();
-    colorC = m.shade(scene.get(), r, i);
-    if (glm::length(colorC) < glm::length(thresh)) {
+    colorC = m.shade(scene.get(), r, i, cel);
+    /*if(glm::length(colorC) < glm::length(thresh)) {
       return colorC; 
-    }
+   }*/
 
     if(depth > 0){
         
@@ -164,7 +165,11 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
 			    ray reflectRay = ray(ray_pos - RAY_EPSILON * ray_dir, reflect, glm::dvec3(1, 1, 1), ray::REFLECTION);
 			    double zero = 0;
           isect dummy;
-			    colorC += m.kr(i) * traceRay(reflectRay, thresh, depth - 1, zero, dummy);
+         /* if (glm::length(m.kr(i)* kr) < glm::length(thresh)) {
+            std::cout<<"reflective term"<<m.kr(i)* kr<<"\n";
+             return colorC; 
+          }*/
+			    colorC += m.kr(i) * traceRay(reflectRay, thresh, depth - 1, zero, dummy, kr * m.kr(i));
       }
 
       //check if materical has non zero transmissive index
@@ -197,7 +202,7 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
                 glm::dvec3 refrac = glm::refract(glm::normalize(ray_dir), glm::normalize(norm), index);
 				        ray refract_ray = ray(ray_pos, refrac, glm::dvec3(1,1,1), ray::REFRACTION);
                 isect dummy;
-				        glm::dvec3 col = traceRay(refract_ray, thresh, depth-1, t, dummy);
+				        glm::dvec3 col = traceRay(refract_ray, thresh, depth-1, t, dummy, kr);
                 if(glm::length(r.getDirection()) < 1 - RAY_EPSILON || glm::length(r.getDirection()) > 1 + RAY_EPSILON){
                   //std::cout<<"ray is not normalized";
                 }
@@ -214,7 +219,7 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
 			          ray reflectRay = ray(ray_pos, reflect, glm::dvec3(1, 1, 1), ray::REFLECTION);
 			          double zero = 0;
                 isect dummy;
-			          colorC += m.kr(i) * traceRay(reflectRay, thresh, depth - 1, zero, dummy);
+			          colorC += m.kr(i) * traceRay(reflectRay, thresh, depth - 1, zero, dummy, m.kr(i) * kr);
             }
       } 
           
