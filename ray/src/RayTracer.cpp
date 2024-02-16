@@ -331,7 +331,8 @@ bool RayTracer::loadScene(const char *fn) {
     }
   }
 
-  //scene->print_BVH_length();
+  //generate scene bvh here
+  this->scene->generate_bvh();
 
   if (!sceneLoaded())
     return false;

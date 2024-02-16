@@ -209,8 +209,8 @@ public:
 
   const BoundingBox &bounds() const { return sceneBounds; }
 
-  void print_BVH_length(){
-    this->bvh.print_objects_length();
+  void generate_bvh(){
+    this->bvh.generate_children(30);
   }
 
 
@@ -226,6 +226,7 @@ private:
       functions in <algorithms> like find() or count()
   */
   std::vector<Geometry *> objects;
+  std::vector<Geometry *> no_box_objects;
   std::vector<Light *> lights;
   Camera camera;
 

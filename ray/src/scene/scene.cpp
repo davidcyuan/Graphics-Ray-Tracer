@@ -106,12 +106,16 @@ Scene::~Scene() {
 
 //add bounding boxes here
 void Scene::add(Geometry *obj) {
-  obj->ComputeBoundingBox();
-  obj->generate_bvh();
-  sceneBounds.merge(obj->getBoundingBox());
-  objects.emplace_back(obj);
-  this->bvh.add(&obj->getBoundingBox());
-
+  if(obj->hasBoundingBoxCapability()){
+    obj->ComputeBoundingBox();
+    obj->generate_bvh();
+    sceneBounds.merge(obj->getBoundingBox());
+    objects.emplace_back(obj);
+    this->bvh.add(&obj->getBoundingBox());
+  }
+  else{
+    this->no_box_objects.emplace_back(obj);
+  }
 }
 
 void Scene::add(Light *light) { lights.emplace_back(light); }
@@ -141,24 +145,22 @@ void Scene::add(Light *light) { lights.emplace_back(light); }
 
 //still need to check non-box objects
 bool Scene::intersect(ray &r, isect &i) const {
-  bool have_one = false;
-  for(const BoundingBox *atom_box : this->bvh.get_atom_boxes()){
-    double tmin = 0.0;
-    double tmax = 0.0;
-    if(atom_box->intersect(r, tmin, tmax)){
-      Geometry *obj = atom_box->get_geometry_parent();
-      isect cur;
-      if(obj->intersect(r, cur)){
-        if(!have_one || cur.getT()<i.getT()){
-          i = cur;
-          have_one = true;
-        }
+  //first check bvh's
+  bool have_one = this->bvh.intersect(r, i);
+  //now check non-bvh's
+  for(const auto &obj : this->no_box_objects){
+    isect cur;
+    if(obj->intersect(r, cur)){
+      if(!have_one || cur.getT() < i.getT()){
+        i = cur;
+        have_one = true;
       }
     }
   }
-  if(!have_one){
+
+  if (!have_one)
     i.setT(1000.0);
-  }
+  // if debugging,
   if (TraceUI::m_debug) {
     addToIntersectCache(std::make_pair(new ray(r), new isect(i)));
   }
