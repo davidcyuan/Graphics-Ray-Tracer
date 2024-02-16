@@ -21,31 +21,31 @@ glm::dvec3 CubeMap::getColor(ray r) const {
     v = y;
 		max = fabs(x);
     if(x < 0){
-        u = z;
+        u = -z;
         face = 1;
     } else{
-      u = -z;
+      u = z;
       face = 0;
     }
 	} else if (fabs(y) >= fabs(x) && fabs(y) >= fabs(z)) {
     max = fabs(y);
     u = x;
     if(y < 0){
-      v = z;
+      v = -z;
       face = 3;
     } else{
-      v = -z;
+      v = z;
       face = 2;
     }
   } else if (fabs(z) >= fabs(x) && fabs(z) >= fabs(y)) {
     max = fabs(z);
     v = y;
     if(z < 0){
-      u = -x;
-      face = 5;
-    } else{
       u = x;
       face = 4;
+    } else{
+      u = -x;
+      face = 5;
     }
   }
   //scales and moves u and v so that it falls on scale [0,1]

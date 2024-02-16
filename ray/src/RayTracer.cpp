@@ -162,7 +162,7 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
 			    ray reflectRay = ray(ray_pos - RAY_EPSILON * ray_dir, reflect, glm::dvec3(1, 1, 1), ray::REFLECTION);
 			    double zero = 0;
           isect dummy;
-         /* if (glm::length(m.kr(i)* kr) < glm::length(thresh)) {
+        /*if (glm::length(m.kr(i)* kr) < glm::length(thresh)) {
             std::cout<<"reflective term"<<m.kr(i)* kr<<"\n";
              return colorC; 
           }*/
@@ -197,9 +197,9 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
             double cos = (1.0 - (index* index* (1.0 - (d_prod * d_prod))));
             if(cos > 0){
                 glm::dvec3 refrac = glm::refract(glm::normalize(ray_dir), glm::normalize(norm), index);
-				        ray refract_ray = ray(ray_pos, refrac, glm::dvec3(1,1,1), ray::REFRACTION);
+				        ray refract_ray = ray(ray_pos + RAY_EPSILON * refrac, refrac, glm::dvec3(1,1,1), ray::REFRACTION);
                 isect dummy;
-				        glm::dvec3 col = traceRay(refract_ray, thresh, depth-1, t, dummy, kr);
+				        glm::dvec3 col = traceRay(refract_ray , thresh, depth-1, t, dummy, kr);
                 if(glm::length(r.getDirection()) < 1 - RAY_EPSILON || glm::length(r.getDirection()) > 1 + RAY_EPSILON){
                   //std::cout<<"ray is not normalized";
                 }
