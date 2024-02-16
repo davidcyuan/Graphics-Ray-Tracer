@@ -73,10 +73,8 @@ public:
     return localbounds;
   }
 
-  void generate_bvh(){
-    std::cout<<"generating"<<std::endl;
-    int bvh_depth = 30;
-    this->bvh.generate_children(bvh_depth);
+  void generate_bvh(int bvh_depth, int bvh_leaf_stop_size){
+    this->bvh.generate_children(bvh_depth, bvh_leaf_stop_size);
   }
 
 protected:

@@ -121,10 +121,7 @@ public:
   // this should be overridden if hasBoundingBoxCapability() is true.
   virtual BoundingBox ComputeLocalBoundingBox() { return BoundingBox(); }
 
-  virtual void generate_bvh(){
-    //std::cout<<"fake generating"<<std::endl;
-  }
-
+  virtual void generate_bvh(int bvh_depth, int bvh_leaf_stop_size){}
   void setTransform(const MatrixTransform &transform) {
     this->transform = transform;
   };
@@ -209,9 +206,7 @@ public:
 
   const BoundingBox &bounds() const { return sceneBounds; }
 
-  void generate_bvh(){
-    this->bvh.generate_children(30);
-  }
+  void generate_bvh(int bvh_depth, int bvh_leaf_stop_size);
 
 
 private:

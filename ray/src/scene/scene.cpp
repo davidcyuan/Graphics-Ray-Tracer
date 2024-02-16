@@ -108,7 +108,6 @@ Scene::~Scene() {
 void Scene::add(Geometry *obj) {
   if(obj->hasBoundingBoxCapability()){
     obj->ComputeBoundingBox();
-    obj->generate_bvh();
     sceneBounds.merge(obj->getBoundingBox());
     objects.emplace_back(obj);
     this->bvh.add(&obj->getBoundingBox());
@@ -117,31 +116,13 @@ void Scene::add(Geometry *obj) {
     this->no_box_objects.emplace_back(obj);
   }
 }
+void Scene::generate_bvh(int bvh_depth, int bvh_leaf_stop_size){
+  //must do this before generating your own bvh, otherwise your atomboxes will be in the children
+  this->bvh.generate_children_atom_boxes(bvh_depth, bvh_leaf_stop_size);
+  this->bvh.generate_children(bvh_depth, bvh_leaf_stop_size);
+}
 
 void Scene::add(Light *light) { lights.emplace_back(light); }
-
-
-// Get any intersection with an object.  Return information about the
-// intersection through the reference parameter.
-// bool Scene::intersect(ray &r, isect &i) const {
-//   bool have_one = false;
-//   for (const auto &obj : objects) {
-//     isect cur;
-//     if (obj->intersect(r, cur)) {
-//       if (!have_one || (cur.getT() < i.getT())) {
-//         i = cur;
-//         have_one = true;
-//       }
-//     }
-//   }
-//   if (!have_one)
-//     i.setT(1000.0);
-//   // if debugging,
-//   if (TraceUI::m_debug) {
-//     addToIntersectCache(std::make_pair(new ray(r), new isect(i)));
-//   }
-//   return have_one;
-// }
 
 //still need to check non-box objects
 bool Scene::intersect(ray &r, isect &i) const {

@@ -105,7 +105,8 @@ class BVH {
     std::list<const BoundingBox *> get_atom_boxes() const{
       return this->atom_boxes;
     }
-    void generate_children(int depth);
+    void generate_children(int depth, int bvh_leaf_stop_size);
+    void generate_children_atom_boxes(int depth, int bvh_leaf_stop_size);
     bool intersect(ray &r, isect &i) const;
   private:
     BoundingBox bvh_box;

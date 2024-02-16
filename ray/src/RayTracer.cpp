@@ -332,7 +332,12 @@ bool RayTracer::loadScene(const char *fn) {
   }
 
   //generate scene bvh here
-  this->scene->generate_bvh();
+  //must re-load scene before using switch
+  if(traceUI->kdSwitch()){
+    int bvh_depth = traceUI->getMaxDepth();
+    int bvh_leaf_stop_size = traceUI->getLeafSize();
+    this->scene->generate_bvh(bvh_depth, bvh_leaf_stop_size);
+  }
 
   if (!sceneLoaded())
     return false;

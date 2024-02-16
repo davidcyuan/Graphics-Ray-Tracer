@@ -104,9 +104,9 @@ void BVH::add(const BoundingBox *atom_box){
   this->bvh_box.merge(*atom_box);
 }
 
-void BVH::generate_children(int depth){
+void BVH::generate_children(int depth, int bvh_leaf_stop_size){
   //no children
-  if(this->atom_boxes.size()<2 || depth <= 0){
+  if(this->atom_boxes.size()<= bvh_leaf_stop_size || depth <= 0){
     return;
   }
   this->has_children = true;
@@ -148,8 +148,15 @@ void BVH::generate_children(int depth){
 
   //recurse
   //std::cout<<"got to recurse"<<std::endl;
-  this->left_child->generate_children(depth - 1);
-  this->right_child->generate_children(depth -1);
+  this->left_child->generate_children(depth - 1, bvh_leaf_stop_size);
+  this->right_child->generate_children(depth -1, bvh_leaf_stop_size);
+}
+void BVH::generate_children_atom_boxes(int depth, int bvh_leaf_stop_size){
+  for(const BoundingBox *atom_box : this->atom_boxes){
+    if(atom_box->is_geometry_parent()){
+      atom_box->get_geometry_parent()->generate_bvh(depth, bvh_leaf_stop_size);
+    }
+  }
 }
 
 bool BVH::intersect(ray &r, isect &i) const{
