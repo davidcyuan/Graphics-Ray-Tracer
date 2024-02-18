@@ -30,7 +30,6 @@ extern TraceUI *traceUI;
 // set in the "trace single ray" mode in TraceGLWindow, for example.
 bool debugMode = false;
 
-// cel shading hard code;
 bool cel = false;
 
 bool animation = true;
@@ -45,6 +44,8 @@ glm::dvec3 RayTracer::trace(double x, double y) {
   if (TraceUI::m_debug) {
     scene->clearIntersectCache();
   }
+
+  //anitaliasing
 
   ray r(glm::dvec3(0, 0, 0), glm::dvec3(0, 0, 0), glm::dvec3(1, 1, 1),
         ray::VISIBILITY);
@@ -68,7 +69,8 @@ glm::dvec3 RayTracer::tracePixel(int i, int j) {
 
 	unsigned char *pixel = buffer.data() + (i + j * buffer_width) * 3;
 
-  //anti aliasing
+//  std::cout<<"get aa_switch : "<<traceUI->aaSwitch()<<std::endl;
+
 	int ss_dim = 1;	//super sample dimension
   if(traceUI->aaSwitch()){
     ss_dim = traceUI->getSuperSamples();
@@ -101,8 +103,13 @@ glm::dvec3 RayTracer::tracePixel(int i, int j) {
 		for(int ss_j = 0;ss_j < ss_dim; ss_j++){
 			double ss_x = x + ss_offset_x + ss_i*ss_x_unit;
 			double ss_y = y + ss_offset_y + ss_j*ss_y_unit;
+			//std::cout<<ss_x<<", "<<ss_y<<"  ";
 			col += trace(ss_x, ss_y);
+      /*if (glm::length(col) < glm::length(thresh)) {
+        return col;
+      }*/
 		}
+		//std::cout<<"\n";
 	}
 	col = col * (1 / double(ss_dim * ss_dim));
 
@@ -114,10 +121,13 @@ glm::dvec3 RayTracer::tracePixel(int i, int j) {
 
 #define VERBOSE 0
 
-//Ray trace given ray
+// Do recursive ray tracing! You'll want to insert a lot of code here (or places
+// called from here) to handle reflection, refraction, etc etc.
+
+//? Actual ray trace
 //dummy intersect object that gets filled with previous ray intersection in order to calculate distance in recursive traceRay calls
 glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
-                                isect &intersect, glm::dvec3 kr) {
+                              isect &intersect, glm::dvec3 kr) {
   isect i;
   glm::dvec3 colorC;
 #if VERBOSE
@@ -126,6 +136,15 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
   
   if (scene->intersect(r, i)) {
     intersect = i;
+    // YOUR CODE HERE
+
+    // An intersection occurred!  We've got work to do. For now, this code gets
+    // the material for the surface that was intersected, and asks that material
+    // to provide a color for the ray.
+
+    // This is a great place to insert code for recursive ray tracing. Instead
+    // of just returning the result of shade(), add some more steps: add in the
+    // contributions from reflected and refracted rays.
 
     const Material &m = i.getMaterial();
     colorC = m.shade(scene.get(), r, i, cel);;
@@ -136,14 +155,17 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
 		  glm::dvec3 ray_dir = r.getDirection();
 		  glm::dvec3 norm = i.getN();
 
+
       // reflection
-      //max reflect magnitude must be above threshold to be worth calculating
-      double max_reflect_mag = glm::length(m.kr(i));
-     if(glm::length(m.kr(i)) != 0 && max_reflect_mag > traceUI->getThreshold()){
+     if(glm::length(m.kr(i)) != 0){
        glm::dvec3 opp = - r.getDirection();
          glm::dvec3 reflect = 2 * glm::dot(opp, norm) * norm - opp;
 			    ray reflectRay = ray(ray_pos - RAY_EPSILON * ray_dir, reflect, glm::dvec3(1, 1, 1), ray::REFLECTION);
           isect dummy;
+        /*if (glm::length(m.kr(i)* kr) < glm::length(thresh)) {
+            std::cout<<"reflective term"<<m.kr(i)* kr<<"\n";
+             return colorC; 
+          }*/
 			    colorC += m.kr(i) * traceRay(reflectRay, thresh, depth - 1, dummy, kr * m.kr(i));
       }
 
@@ -177,17 +199,10 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
                 glm::dvec3 refrac = glm::refract(glm::normalize(ray_dir), glm::normalize(norm), index);
 				        ray refract_ray = ray(ray_pos + RAY_EPSILON * refrac, refrac, glm::dvec3(1,1,1), ray::REFRACTION);
                 isect dummy;
-
-                //0 depth trace ray to get attenuation
-                // ray atten_test_ray = refract_ray;
-                // isect atten_dummy = dummy;
-
-                // dummy_col = traceRay(atten_test_ray, thresh, 0, t, )
-
-
-
-
 				        glm::dvec3 col = traceRay(refract_ray , thresh, depth-1, dummy, kr);
+                if(glm::length(r.getDirection()) < 1 - RAY_EPSILON || glm::length(r.getDirection()) > 1 + RAY_EPSILON){
+                  //std::cout<<"ray is not normalized";
+                }
                 
                 if(inside){
                   colorC += col;
@@ -200,8 +215,7 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
                 glm::dvec3 reflect = 2 * glm::dot(opp, norm) * norm - opp;
 			          ray reflectRay = ray(ray_pos, reflect, glm::dvec3(1, 1, 1), ray::REFLECTION);
                 isect dummy;
-                if(glm::length(m.kr(i)) != 0 && max_reflect_mag > traceUI->getThreshold())
-			            colorC += m.kr(i) * traceRay(reflectRay, thresh, depth - 1, dummy, m.kr(i) * kr);
+			          colorC += m.kr(i) * traceRay(reflectRay, thresh, depth - 1, dummy, m.kr(i) * kr);
             }
       } 
           
@@ -280,8 +294,7 @@ bool RayTracer::loadScene(const char *fn) {
   if (isRay) {
     // .ray Parsing Path
    if(animation){
-    for(int i = 1; i < 30; i++){
-    Tokenizer tokenizer(ifs, false, animation ? i : 1);
+    Tokenizer tokenizer(ifs, false, threads);
     Parser parser(tokenizer, path);
     try {
       scene.reset(parser.parseScene());
@@ -299,8 +312,6 @@ bool RayTracer::loadScene(const char *fn) {
       traceUI->alert(msg);
       return false;
     }
-    }
-    
    }
   } else {
     // JSON Parsing Path
