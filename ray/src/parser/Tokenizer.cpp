@@ -34,11 +34,12 @@
 // file pointer.
 //
 
-Tokenizer::Tokenizer(istream &fp, bool printTokens) : buffer(fp, false, false) {
+Tokenizer::Tokenizer(istream &fp, bool printTokens, int t) : buffer(fp, false, false) {
   TokenColumn = 0;
   CurrentCh = ' ';
   UnGetToken = NULL;
   _printTokens = printTokens;
+  time = t;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -259,7 +260,10 @@ Token *Tokenizer::GetPunct() {
     GetCh();
     T = new Token(SEMICOLON);
     break;
-
+  case '*':
+    GetCh(); 
+    T = new Token(MULT);      
+    break;
   default:
     std::ostringstream ost;
     ost << "unexpected character: '" << CurrentCh << "'";

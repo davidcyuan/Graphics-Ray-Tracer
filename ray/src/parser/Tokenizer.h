@@ -33,7 +33,9 @@ using std::unique_ptr;
 
 class Tokenizer {
 public:
-  Tokenizer(istream &fp, bool printTokens);
+  int time;
+
+  Tokenizer(istream &fp, bool printTokens, int t);
 
   // destructively read & return the next token, skipping over whitespace
   unique_ptr<Token> Get();

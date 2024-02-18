@@ -26,6 +26,7 @@ string getNameForToken(const SYMBOL kind) {
   static std::map<int, string> tokenNames;
 
   if (tokenNames.empty()) {
+    tokenNames[ MULT ] = "*";
     tokenNames[EOFSYM] = "EOF";
     tokenNames[SBT_RAYTRACER] = "SBT-raytracer";
     tokenNames[IDENT] = "Identifier";

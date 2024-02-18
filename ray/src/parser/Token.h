@@ -28,6 +28,7 @@ enum SYMBOL {
   UNKNOWN, // Placeholder
   EOFSYM,  // End of file
   SBT_RAYTRACER,
+  MULT,
 
   IDENT,  // Ident (gets enclosed in quotes in trace files)
   SCALAR, // Scalar values

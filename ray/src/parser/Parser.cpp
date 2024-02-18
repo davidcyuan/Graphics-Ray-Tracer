@@ -829,8 +829,13 @@ string Parser::parseIdentExpression() {
 }
 
 double Parser::parseScalar() {
+  bool multiply = false;
   unique_ptr<Token> scalar(_tokenizer.Read(SCALAR));
+  if(_tokenizer.CondRead(MULT)) {
+    multiply = true;
 
+    return scalar->value() * _tokenizer.time;
+  }
   return scalar->value();
 }
 
@@ -873,30 +878,65 @@ bool Parser::parseBoolean() {
 }
 
 glm::dvec3 Parser::parseVec3d() {
+  bool x = false, y = false, z = false;
   _tokenizer.Read(LPAREN);
   unique_ptr<Token> value1(_tokenizer.Read(SCALAR));
+  if( _tokenizer.CondRead(MULT)) {
+    x = true;
+  }
   _tokenizer.Read(COMMA);
   unique_ptr<Token> value2(_tokenizer.Read(SCALAR));
+  if( _tokenizer.CondRead(MULT)) {
+    y = true;
+  }
   _tokenizer.Read(COMMA);
   unique_ptr<Token> value3(_tokenizer.Read(SCALAR));
+  if( _tokenizer.CondRead(MULT)) {
+    z = true;
+  }
   _tokenizer.Read(RPAREN);
+
+  std::cout<<value1->value()<<"\n";
+  std::cout<<value2->value()<<"\n";
+  std::cout<<value3->value()<<"\n";
+  double a = value1->value() * (x ? _tokenizer.time : 1.0);
+  double b = value2->value() * (y ? _tokenizer.time : 1.0);
+  double c = value3->value() * (z ? _tokenizer.time : 1.0);
+  return glm::dvec3(a,b,c);
 
   return glm::dvec3(value1->value(), value2->value(), value3->value());
 }
 
-glm::dvec4 Parser::parseVec4d() {
-  _tokenizer.Read(LPAREN);
-  unique_ptr<Token> value1(_tokenizer.Read(SCALAR));
-  _tokenizer.Read(COMMA);
-  unique_ptr<Token> value2(_tokenizer.Read(SCALAR));
-  _tokenizer.Read(COMMA);
-  unique_ptr<Token> value3(_tokenizer.Read(SCALAR));
-  _tokenizer.Read(COMMA);
-  unique_ptr<Token> value4(_tokenizer.Read(SCALAR));
-  _tokenizer.Read(RPAREN);
+glm::dvec4 Parser::parseVec4d() 
+{
+  bool w = false, x = false, y = false, z = false;
+  _tokenizer.Read( LPAREN );
+  unique_ptr<Token> value1( _tokenizer.Read( SCALAR ) );
+  if( _tokenizer.CondRead(MULT)) {
+    w = true;
+  }
+  _tokenizer.Read( COMMA );
+  unique_ptr<Token> value2( _tokenizer.Read( SCALAR ) );
+  if( _tokenizer.CondRead(MULT)) {
+    x = true;
+  }
+  _tokenizer.Read( COMMA );
+  unique_ptr<Token> value3( _tokenizer.Read( SCALAR ) );
+  if( _tokenizer.CondRead(MULT)) {
+    y = true;
+  }
+  _tokenizer.Read( COMMA );
+  unique_ptr<Token> value4( _tokenizer.Read( SCALAR ) );
+  if( _tokenizer.CondRead(MULT)) {
+    z = true;
+  }
+  _tokenizer.Read( RPAREN );
 
-  return glm::dvec4(value1->value(), value2->value(), value3->value(),
-                    value4->value());
+  double a = value1->value() * (w ? _tokenizer.time : 1.0);
+  double b = value2->value() * (x ? _tokenizer.time : 1.0);
+  double c = value3->value() * (y ? _tokenizer.time : 1.0);
+  double d = value4->value() * (z ? _tokenizer.time : 1.0);
+  return glm::dvec4(a,b,c,d);
 }
 
 Material *Parser::parseMaterial(Scene *scene, const Material &parent) {
