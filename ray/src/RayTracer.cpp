@@ -49,7 +49,7 @@ glm::dvec3 RayTracer::trace(double x, double y) {
   scene->getCamera().rayThrough(x, y, r);
   isect isect_dummy;
   glm::dvec3 ret =
-      traceRay(r, glm::dvec3(1.0, 1.0, 1.0), traceUI->getDepth(), isect_dummy, glm::dvec3(1, 1, 1));
+      traceRay(r, traceUI->getDepth(), isect_dummy, glm::dvec3(1, 1, 1));
   ret = glm::clamp(ret, 0.0, 1.0);
   return ret;
 }
@@ -114,8 +114,8 @@ glm::dvec3 RayTracer::tracePixel(int i, int j) {
 
 //Ray trace given ray
 //dummy intersect object that gets filled with previous ray intersection in order to calculate distance in recursive traceRay calls
-glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
-                                isect &intersect, glm::dvec3 kr) {
+glm::dvec3 RayTracer::traceRay(ray &r, int depth,
+                                isect &intersect, glm::dvec3 prev_kr) {
   isect i;
   glm::dvec3 colorC;
 #if VERBOSE
@@ -125,6 +125,7 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
   if (scene->intersect(r, i)) {
     intersect = i;
 
+    //phong illumination
     const Material &m = i.getMaterial();
     colorC = m.shade(scene.get(), r, i, cel);;
 
@@ -136,13 +137,13 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
 
       // reflection
       //max reflect magnitude must be above threshold to be worth calculating
-      double max_reflect_mag = glm::length(m.kr(i));
+      double max_reflect_mag = glm::length(m.kr(i) * prev_kr);
      if(glm::length(m.kr(i)) != 0 && max_reflect_mag > traceUI->getThreshold()){
        glm::dvec3 opp = - r.getDirection();
          glm::dvec3 reflect = 2 * glm::dot(opp, norm) * norm - opp;
 			    ray reflectRay = ray(ray_pos - RAY_EPSILON * ray_dir, reflect, glm::dvec3(1, 1, 1), ray::REFLECTION);
           isect dummy;
-			    colorC += m.kr(i) * traceRay(reflectRay, thresh, depth - 1, dummy, kr * m.kr(i));
+			    colorC += m.kr(i) * traceRay(reflectRay, depth - 1, dummy, prev_kr * m.kr(i));
       }
 
       //check if materical has non zero transmissive index
@@ -175,22 +176,26 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
                 glm::dvec3 refrac = glm::refract(glm::normalize(ray_dir), glm::normalize(norm), index);
 				        ray refract_ray = ray(ray_pos + RAY_EPSILON * refrac, refrac, glm::dvec3(1,1,1), ray::REFRACTION);
                 isect dummy;
+                glm::dvec3 col = glm::dvec3(0, 0, 0);
 
-                //0 depth trace ray to get attenuation
-                // ray atten_test_ray = refract_ray;
-                // isect atten_dummy = dummy;
-
-                // dummy_col = traceRay(atten_test_ray, thresh, 0, t, )
-
-
-
-
-				        glm::dvec3 col = traceRay(refract_ray , thresh, depth-1, dummy, kr);
+                // 0 depth trace ray to get attenuation
+                ray atten_test_ray = refract_ray;
+                isect atten_dummy = dummy;
+                glm::dvec3 dummy_col = traceRay(atten_test_ray, 0, atten_dummy, prev_kr);
                 
+                //refracting from outside = no attenuation, so no thresholding
                 if(inside){
+                  col = traceRay(refract_ray, depth-1, dummy, prev_kr);
                   colorC += col;
-                } else{
-                  colorC += col * glm::pow(m.kt(i), glm::dvec3(dummy.getT()));
+                }
+                //refracting through inside means yes attenuation
+                else{
+                  //must pass attenuation threshold
+                  double refract_max_mag = glm::length(glm::pow(m.kt(i), glm::dvec3(dummy.getT())) * prev_kr);
+                  if(refract_max_mag > traceUI->getThreshold()){
+                    col = traceRay(refract_ray, depth-1, dummy, glm::pow(m.kt(i), glm::dvec3(dummy.getT())) * prev_kr);
+                    colorC += col * glm::pow(m.kt(i), glm::dvec3(dummy.getT()));
+                  }
                 }
             } else{
                 //total internal reflection
@@ -199,7 +204,7 @@ glm::dvec3 RayTracer::traceRay(ray &r, const glm::dvec3 &thresh, int depth,
 			          ray reflectRay = ray(ray_pos, reflect, glm::dvec3(1, 1, 1), ray::REFLECTION);
                 isect dummy;
                 if(glm::length(m.kr(i)) != 0 && max_reflect_mag > traceUI->getThreshold())
-			            colorC += m.kr(i) * traceRay(reflectRay, thresh, depth - 1, dummy, m.kr(i) * kr);
+			            colorC += m.kr(i) * traceRay(reflectRay, depth - 1, dummy, m.kr(i) * prev_kr);
             }
       } 
           
