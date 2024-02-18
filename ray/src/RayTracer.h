@@ -31,7 +31,7 @@ public:
 
   glm::dvec3 tracePixel(int i, int j);
   glm::dvec3 traceRay(ray &r, const glm::dvec3 &thresh, int depth,
-                      double &length, isect &interseciton, glm::dvec3 kr);
+                      isect &interseciton, glm::dvec3 kr);
 
   glm::dvec3 getPixel(int i, int j);
   void setPixel(int i, int j, glm::dvec3 color);
