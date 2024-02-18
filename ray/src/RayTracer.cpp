@@ -31,6 +31,8 @@ extern TraceUI *traceUI;
 bool debugMode = false;
 
 bool cel = false;
+
+bool animation = true;
 // Trace a top-level ray through pixel(i,j), i.e. normalized window coordinates
 // (x,y), through the projection plane, and out into the scene. All we do is
 // enter the main ray-tracing method, getting things started by plugging in an
@@ -273,7 +275,7 @@ double RayTracer::aspectRatio() {
 bool RayTracer::loadScene(const char *fn) {
   ifstream ifs(fn);
   if (!ifs) {
-    string msg("Error: couldn't read scene file ");
+        string msg("Error: couldn't read scene file ");
     msg.append(fn);
     traceUI->alert(msg);
     return false;
@@ -294,8 +296,9 @@ bool RayTracer::loadScene(const char *fn) {
 
   if (isRay) {
     // .ray Parsing Path
-    // Call this with 'true' for debug output from the tokenizer
-    Tokenizer tokenizer(ifs, false);
+   if(animation){
+    for(int i = 1; i < 30; i++){
+    Tokenizer tokenizer(ifs, false, animation ? i : 1);
     Parser parser(tokenizer, path);
     try {
       scene.reset(parser.parseScene());
@@ -313,6 +316,9 @@ bool RayTracer::loadScene(const char *fn) {
       traceUI->alert(msg);
       return false;
     }
+    }
+    
+   }
   } else {
     // JSON Parsing Path
     try {
