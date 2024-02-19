@@ -138,6 +138,10 @@ public:
                            [[maybe_unused]] bool actualMaterials,
                            [[maybe_unused]] bool actualTextures) const {}
 
+  virtual glm::dvec3 local_to_global_normal(glm::dvec3 local_norm) const{
+    return transform.localToGlobalCoordsNormal(local_norm);
+  }
+
 protected:
   BoundingBox bounds;
   MatrixTransform transform;

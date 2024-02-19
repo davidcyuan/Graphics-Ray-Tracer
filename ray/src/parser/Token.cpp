@@ -79,6 +79,7 @@ string getNameForToken(const SYMBOL kind) {
     tokenNames[SPECULAR] = "specular";
     tokenNames[REFLECTIVE] = "reflective";
     tokenNames[DIFFUSE] = "diffuse";
+    tokenNames[TNORMAL] = "texture_normal";
     tokenNames[TRANSMISSIVE] = "transmissive";
     tokenNames[SHININESS] = "shininess";
     tokenNames[INDEX] = "index";
@@ -122,6 +123,7 @@ SYMBOL lookupReservedWord(const string &ident) {
     reservedWords["constant_attenuation_coeff"] = CONSTANT_ATTENUATION_COEFF;
     reservedWords["cylinder"] = CYLINDER;
     reservedWords["diffuse"] = DIFFUSE;
+    reservedWords["texture_normal"] = TNORMAL;
     reservedWords["direction"] = DIRECTION;
     reservedWords["directional_light"] = DIRECTIONAL_LIGHT;
     reservedWords["emissive"] = EMISSIVE;

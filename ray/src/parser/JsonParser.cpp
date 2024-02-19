@@ -98,6 +98,7 @@ Material parseMaterial(const json &j, ParseData &pd) {
   Material m = pd.cur_mat;
   IGNORE_MISSING(m.setAmbient(parseMaterialParameter(j.at("ambient"), pd)));
   IGNORE_MISSING(m.setDiffuse(parseMaterialParameter(j.at("diffuse"), pd)));
+  IGNORE_MISSING(m.setTNormal(parseMaterialParameter(j.at("tnormal"), pd)));
   IGNORE_MISSING(m.setSpecular(parseMaterialParameter(j.at("specular"), pd)));
   IGNORE_MISSING(
       m.setReflective(parseMaterialParameter(j.at("reflective"), pd)));

@@ -94,6 +94,10 @@ public:
   }
   const Material &getMaterial() const;
 
+  const SceneObject* get_Geometry() const{
+    return this->obj;
+  }
+
 private:
   void copyFromOther(const isect &other) {
     if (this == &other)

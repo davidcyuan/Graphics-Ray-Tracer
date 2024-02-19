@@ -32,7 +32,7 @@ bool debugMode = false;
 
 bool cel = false;
 
-bool animation = false;
+bool animation = true;
 // Trace a top-level ray through pixel(i,j), i.e. normalized window coordinates
 // (x,y), through the projection plane, and out into the scene. All we do is
 // enter the main ray-tracing method, getting things started by plugging in an

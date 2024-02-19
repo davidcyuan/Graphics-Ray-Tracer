@@ -15,7 +15,20 @@ Material::~Material() {}
 
 // Apply the phong model to this point on the surface of the object, returning
 // the color of that point.
-glm::dvec3 Material::shade(Scene *scene, const ray &r, const isect &i, bool cel) const {
+glm::dvec3 Material::shade(Scene *scene, const ray &r, const isect &upper_i, bool cel) const {
+  isect i = upper_i;
+  //local normals
+  glm::dvec3 local_texture_norm = kn(upper_i);
+  if(local_texture_norm[0]>0){
+    // std::cout<<"normal map is not negative :)"<<std::endl;
+    const SceneObject* intersect_geometry = upper_i.get_Geometry();
+    glm::dvec3 global_texture_norm = intersect_geometry->local_to_global_normal(local_texture_norm);
+    
+    i.setN(global_texture_norm);
+  }
+
+
+
   //get initial position and color
   glm::dvec3 isect_point = r.at(i.getT()-RAY_EPSILON*2);  
   glm::dvec3 pos = r.at(i.getT());

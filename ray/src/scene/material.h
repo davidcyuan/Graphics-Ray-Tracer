@@ -13,6 +13,7 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
+#include <iostream>
 
 class Scene;
 class ray;
@@ -142,7 +143,7 @@ class Material {
 public:
   Material()
       : _ke(glm::dvec3(0.0, 0.0, 0.0)), _ka(glm::dvec3(0.0, 0.0, 0.0)),
-        _ks(glm::dvec3(0.0, 0.0, 0.0)), _kd(glm::dvec3(0.0, 0.0, 0.0)),
+        _ks(glm::dvec3(0.0, 0.0, 0.0)), _kd(glm::dvec3(0.0, 0.0, 0.0)), _kn(glm::dvec3(-1, 0.0, 0.0)),
         _kr(glm::dvec3(0.0, 0.0, 0.0)), _kt(glm::dvec3(0.0, 0.0, 0.0)),
         _refl(0), _trans(0), _recur(0), _spec(0), _both(0), _shininess(0.0),
         _index(1.0) {}
@@ -152,7 +153,15 @@ public:
   Material(const glm::dvec3 &e, const glm::dvec3 &a, const glm::dvec3 &s,
            const glm::dvec3 &d, const glm::dvec3 &r, const glm::dvec3 &t,
            double sh, double in)
-      : _ke(e), _ka(a), _ks(s), _kd(d), _kr(r), _kt(t),
+      : _ke(e), _ka(a), _ks(s), _kd(d), _kn(glm::dvec3(-1, 0.0, 0.0)), _kr(r), _kt(t),
+        _shininess(glm::dvec3(sh, sh, sh)), _index(glm::dvec3(in, in, in)) {
+    setBools();
+  }
+
+  Material(const glm::dvec3 &e, const glm::dvec3 &a, const glm::dvec3 &s,
+           const glm::dvec3 &d, const glm::dvec3 &n, const glm::dvec3 &r, const glm::dvec3 &t,
+           double sh, double in)
+      : _ke(e), _ka(a), _ks(s), _kd(d), _kn(n), _kr(r), _kt(t),
         _shininess(glm::dvec3(sh, sh, sh)), _index(glm::dvec3(in, in, in)) {
     setBools();
   }
@@ -164,6 +173,7 @@ public:
     _ka += m._ka;
     _ks += m._ks;
     _kd += m._kd;
+    _kn += m._kn;
     _kr += m._kr;
     _kt += m._kt;
     _index += m._index;
@@ -180,6 +190,7 @@ public:
   glm::dvec3 ka(const isect &i) const { return _ka.value(i); }
   glm::dvec3 ks(const isect &i) const { return _ks.value(i); }
   glm::dvec3 kd(const isect &i) const { return _kd.value(i); }
+  glm::dvec3 kn(const isect &i) const { return _kn.value(i); }
   glm::dvec3 kr(const isect &i) const { return _kr.value(i); }
   glm::dvec3 kt(const isect &i) const { return _kt.value(i); }
   double shininess(const isect &i) const {
@@ -215,6 +226,7 @@ public:
   void setAmbient(const MaterialParameter &ka) { _ka = ka; }
   void setSpecular(const MaterialParameter &ks) { _ks = ks; }
   void setDiffuse(const MaterialParameter &kd) { _kd = kd; }
+  void setTNormal(const MaterialParameter &kn) {_kn = kn;}
   void setReflective(const MaterialParameter &kr) {
     _kr = kr;
     setBools();
@@ -240,6 +252,7 @@ private:
   MaterialParameter _ka; // ambient
   MaterialParameter _ks; // specular
   MaterialParameter _kd; // diffuse
+  MaterialParameter _kn; // normal
   MaterialParameter _kr; // reflective
   MaterialParameter _kt; // transmissive
 

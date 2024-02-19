@@ -950,10 +950,11 @@ Material *Parser::parseMaterial(Scene *scene, const Material &parent) {
   string name;
 
   Material *mat = new Material(parent);
-
+  // std::cout<<"are you serious"<<std::endl;
+  // return mat;
   for (;;) {
     const Token *token = _tokenizer.Peek();
-    switch (token->kind()) {
+    switch (TNORMAL) {
     case EMISSIVE:
       mat->setEmissive(parseVec3dMaterialParameter(scene));
       break;
@@ -974,6 +975,12 @@ Material *Parser::parseMaterial(Scene *scene, const Material &parent) {
     case DIFFUSE:
       mat->setDiffuse(parseVec3dMaterialParameter(scene));
       break;
+
+    case TNORMAL: {
+      // std::cout<<"TNormal parsed"<<std::endl;
+      mat->setTNormal(parseVec3dMaterialParameter(scene));
+      break;
+    }
 
     case REFLECTIVE:
       mat->setReflective(parseVec3dMaterialParameter(scene));
