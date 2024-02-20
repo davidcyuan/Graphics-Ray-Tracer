@@ -8,3 +8,9 @@ Ray Specs:
     Specifically, the hypothesis is that rays will sometimes clip the boundary of two connected surfaces, and by computational imprecision, not collide with either,
     leading to edge cases. Fixing this feels like outside the scope of the project, as it requires editing intersection detection for all objects, most of which are
     pre-implemented should be expected to work.
+
+Cel Shading (alternate shading model):
+At the top of RayTracer.cpp, there is a bool value called cel. Set this to true to turn on cel shading and set it to false to turn off cel shading. We based our cel shading model off the isntructions from a University of Washington project https://faculty.washington.edu/joelross/courses/archive/f14/cs315/lab/toon/.
+
+Animation:
+At the top of RayTracer.cpp, there is a bool value called animation. Set this to true to turn on animation and set it to false to turn off animation. We picked to use the threads slider to adjust time t (we wanted to add another slider to the gui for time but did not have enough time to implement this). In the .ray files, * indicates a value that changes over time. Each individual frame for the animation must be loaded in and threads must be adjusted for time. We did this for some animation .ray scenes (included under the animation folder) and pieced it together to form our video, which was shared online via youtube and can be seen here https://youtu.be/RoOuojobfH4.
