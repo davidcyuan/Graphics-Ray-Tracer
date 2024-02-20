@@ -1,6 +1,8 @@
 Names:
   David Yuan: dcy265
   Sophia Li: sl49428
+
+Milestone 1:
 Ray Specs:
   Almost all rays created from intersection points are brought backwards by RAY_EPSILON
   Shadowrays for shadow attenuation are instead brought forward by RAY_EPSILON, so as to not add the same intersection point multiple times
@@ -8,6 +10,19 @@ Ray Specs:
     Specifically, the hypothesis is that rays will sometimes clip the boundary of two connected surfaces, and by computational imprecision, not collide with either,
     leading to edge cases. Fixing this feels like outside the scope of the project, as it requires editing intersection detection for all objects, most of which are
     pre-implemented should be expected to work.
+
+------------------------------------------------------------------------------------------------------------------------
+
+Milestone 2:
+BVH: We implemented an AABVH for our speed-up datastructure, without any heuristics for improving spacial efficiency. Depth/leaf parameters are adjusted with the kd sliders. Note that changing the sliders/box requires re-loading the scene.
+  Implementation Detail: The code assumes that at the end of LoacScene, all objects have been parsed.
+
+Adaptive Termination: Threshold is treated as the absolute magnitude of light.
+  For camera rays: reflecting/refracting rays that cannot meet the threshold due to low kr or attenuation are not calculated.
+  For reflecting/refracting rays: recursive reflect/refract rays that cannot meet the parent threshold due to compounding kr's and attenuation are not calculated.
+
+Normal Mapping: Objects that calculate uv coordinates can be given a normal map. Note that the map must be in rgb/png, and not rgba.
+  For demostration: a Normal-Map and Normal-Map-json are included in the submission.
 
 Cel Shading (alternate shading model):
 At the top of RayTracer.cpp, there is a bool value called cel. Set this to true to turn on cel shading and set it to false to turn off cel shading. We based our cel shading model off the isntructions from a University of Washington project https://faculty.washington.edu/joelross/courses/archive/f14/cs315/lab/toon/.
