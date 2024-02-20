@@ -14,6 +14,8 @@ Ray Specs:
 ------------------------------------------------------------------------------------------------------------------------
 
 Milestone 2:
+Texturing/Cubemap: No comments.
+
 BVH: We implemented an AABVH for our speed-up datastructure, without any heuristics for improving spacial efficiency. Depth/leaf parameters are adjusted with the kd sliders. Note that changing the sliders/box requires re-loading the scene.
   Implementation Detail: The code assumes that at the end of LoacScene, all objects have been parsed.
 
